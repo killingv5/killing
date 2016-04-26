@@ -1,4 +1,4 @@
-package easylog
+package xlog4go
 
 import (
 	"bufio"
@@ -13,6 +13,8 @@ import (
 var pathVariableTable map[byte]func(*time.Time) int
 
 type FileWriter struct {
+	logLevelFloor int
+	logLevelCeil  int
 	filename      string
 	pathFmt       string
 	file          *os.File
@@ -26,11 +28,19 @@ func NewFileWriter() *FileWriter {
 }
 
 func (w *FileWriter) Init() error {
-	return w.Rotate()
+	return w.CreateLogFile()
 }
 
 func (w *FileWriter) SetFileName(filename string) {
 	w.filename = filename
+}
+
+func (w *FileWriter) SetLogLevelFloor(floor int) {
+	w.logLevelFloor = floor
+}
+
+func (w *FileWriter) SetLogLevelCeil(ceil int) {
+	w.logLevelCeil = ceil
 }
 
 func (w *FileWriter) SetPathPattern(pattern string) error {
@@ -66,18 +76,47 @@ func (w *FileWriter) SetPathPattern(pattern string) error {
 		}
 	}
 
+	for i, act := range w.actions {
+		now := time.Now()
+		w.variables[i] = act(&now)
+	}
+	//fmt.Printf("%v\n", w.variables)
+
 	w.pathFmt = convertPatternToFmt(tmp)
 
 	return nil
 }
 
 func (w *FileWriter) Write(r *Record) error {
+	if r.level < w.logLevelFloor || r.level > w.logLevelCeil {
+		return nil
+	}
 	if w.fileBufWriter == nil {
 		return errors.New("no opened file")
 	}
 	if _, err := w.fileBufWriter.WriteString(r.String()); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (w *FileWriter) CreateLogFile() error {
+	if err := os.MkdirAll(path.Dir(w.filename), 0755); err != nil {
+		if !os.IsExist(err) {
+			return err
+		}
+	}
+
+	if file, err := os.OpenFile(w.filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644); err != nil {
+		return err
+	} else {
+		w.file = file
+	}
+
+	if w.fileBufWriter = bufio.NewWriterSize(w.file, 8192); w.fileBufWriter == nil {
+		return errors.New("new fileBufWriter failed.")
+	}
+
 	return nil
 }
 
@@ -96,6 +135,7 @@ func (w *FileWriter) Rotate() error {
 			rotate = true
 		}
 	}
+	//fmt.Printf("%v\n", w.variables)
 
 	if rotate == false {
 		return nil
@@ -108,10 +148,8 @@ func (w *FileWriter) Rotate() error {
 	}
 
 	if w.file != nil {
-
-		// 将文件以pattern形式改名关关闭
+		// 将文件以pattern形式改名并关闭
 		filePath := fmt.Sprintf(w.pathFmt, old_variables...)
-		filePath = w.filename + filePath
 
 		if err := os.Rename(w.filename, filePath); err != nil {
 			return err
@@ -122,27 +160,7 @@ func (w *FileWriter) Rotate() error {
 		}
 	}
 
-	filePath := w.filename
-
-	if err := os.MkdirAll(path.Dir(filePath), 0755); err != nil {
-		if !os.IsExist(err) {
-			return err
-		}
-	}
-
-	// 开启新的文件开始写
-
-	if file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644); err != nil {
-		return err
-	} else {
-		w.file = file
-	}
-
-	if w.fileBufWriter = bufio.NewWriterSize(w.file, 8192); w.fileBufWriter == nil {
-		return errors.New("new fileBufWriter failed.")
-	}
-
-	return nil
+	return w.CreateLogFile()
 }
 
 func (w *FileWriter) Flush() error {

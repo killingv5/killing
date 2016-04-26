@@ -1,4 +1,4 @@
-package easylog
+package xlog4go
 
 import (
 	"encoding/json"
@@ -7,8 +7,11 @@ import (
 )
 
 type ConfFileWriter struct {
-	LogPath string `json:"LogPath"`
-	On      bool   `json:"On"`
+	On              bool   `json:"On"`
+	LogPath         string `json:"LogPath"`
+	RotateLogPath   string `json:"RotateLogPath"`
+	WfLogPath       string `json:"WfLogPath"`
+	RotateWfLogPath string `json:"RotateWfLogPath"`
 }
 
 type ConfConsoleWriter struct {
@@ -32,9 +35,27 @@ func SetupLogWithConf(file string) (err error) {
 	}
 
 	if lc.FW.On {
-		w := NewFileWriter()
-		w.SetPathPattern(lc.FW.LogPath)
-		Register(w)
+		if len(lc.FW.LogPath) > 0 {
+			w := NewFileWriter()
+			w.SetFileName(lc.FW.LogPath)
+			w.SetPathPattern(lc.FW.RotateLogPath)
+			w.SetLogLevelFloor(TRACE)
+			if len(lc.FW.WfLogPath) > 0 {
+				w.SetLogLevelCeil(INFO)
+			} else {
+				w.SetLogLevelCeil(ERROR)
+			}
+			Register(w)
+		}
+
+		if len(lc.FW.WfLogPath) > 0 {
+			wfw := NewFileWriter()
+			wfw.SetFileName(lc.FW.WfLogPath)
+			wfw.SetPathPattern(lc.FW.RotateWfLogPath)
+			wfw.SetLogLevelFloor(WARNING)
+			wfw.SetLogLevelCeil(ERROR)
+			Register(wfw)
+		}
 	}
 
 	if lc.CW.On {
@@ -46,6 +67,7 @@ func SetupLogWithConf(file string) (err error) {
 	switch lc.Level {
 	case "trace":
 		SetLevel(TRACE)
+
 	case "debug":
 		SetLevel(DEBUG)
 

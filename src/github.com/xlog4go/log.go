@@ -1,4 +1,4 @@
-package easylog
+package xlog4go
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ type Record struct {
 }
 
 func (r *Record) String() string {
-	return fmt.Sprintf("%s %s [%s] %s\n", LEVEL_FLAGS[r.level], r.time, r.code, r.info)
+	return fmt.Sprintf("%s [%s] <%s> %s\n", r.time, LEVEL_FLAGS[r.level], r.code, r.info)
 }
 
 type Writer interface {

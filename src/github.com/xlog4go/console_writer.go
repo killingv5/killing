@@ -1,4 +1,4 @@
-package easylog
+package xlog4go
 
 import (
 	"fmt"
