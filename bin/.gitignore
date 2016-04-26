@@ -1,0 +1,11 @@
+asmfmt
+errcheck
+gocode
+gogetdoc
+goimports
+golint
+gometalinter
+gorename
+gotags
+guru
+motion
