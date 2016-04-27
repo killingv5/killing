@@ -41,6 +41,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	err = seckill.Pushtoredis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
 	if err != nil {
     	w.Write([]byte("unknow error"))
+    	fmt.Println(err)
 	} else {
     	w.Write([]byte("Hello"))
 	}
@@ -144,11 +145,15 @@ func initFromConf(configFile string) error {
 }
 
 func initRedisCli(serverInfo string) error {
-	redisCli := &iowrapper.RedisClient{
-			Servers:        []string{serverInfo},
+	fmt.Println(serverInfo)
+	redisCli = &iowrapper.RedisClient{
+	//		Servers:        []string{serverInfo},
+		Servers:        []string{"127.0.0.1:6379"},
 	}
 
 	err := redisCli.Init()
+
+		//redisCli.Set("xxx", []byte("xxx1"))
 	return err
 }
 
@@ -174,6 +179,7 @@ func main() {
 		fmt.Println("usage bin/seckill configFile")
 		return
 	}
+
 	err := initFromConf(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
