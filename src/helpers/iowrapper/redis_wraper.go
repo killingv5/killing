@@ -17,13 +17,13 @@ type RedisClient struct {
 	WriteTimeoutMs int
 	ReadTimeoutMs  int
 
-	MaxIdle      int
-	MaxActive    int
-	IdleTimeoutS int
-	Password     string
+	MaxIdle        int
+	MaxActive      int
+	IdleTimeoutS   int
+	Password       string
 
-	current_index int
-	pool          *redis.Pool
+	current_index  int
+	pool           *redis.Pool
 }
 
 func (client *RedisClient) Close() {
@@ -47,9 +47,9 @@ func (client *RedisClient) Init() error {
 				index := common.RandIntn(len(client.Servers))
 				client.current_index = index
 				c, err = redis.DialTimeout("tcp", client.Servers[index],
-					time.Duration(client.ConnTimeoutMs)*time.Millisecond,
-					time.Duration(client.ReadTimeoutMs)*time.Millisecond,
-					time.Duration(client.WriteTimeoutMs)*time.Millisecond)
+					time.Duration(client.ConnTimeoutMs) * time.Millisecond,
+					time.Duration(client.ReadTimeoutMs) * time.Millisecond,
+					time.Duration(client.WriteTimeoutMs) * time.Millisecond)
 				if err != nil {
 					logger.Warn("warning=[redis_connect_failed] num=[%d] server=[%s] err=[%s]",
 						i, client.Servers[index], err.Error())
@@ -402,4 +402,26 @@ func (client *RedisClient) Smembers(key string) ([]string, error) {
 	}
 
 	return res, nil
+}
+
+func (client *RedisClient) Decr(key string) (int64, error) {
+	conn := client.pool.Get()
+	defer conn.Close()
+
+	res, err := redis.Int64(conn.Do("DECR", key))
+	if err != nil {
+		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+			client.Servers[client.current_index], key, err.Error())
+
+		conn_second := client.pool.Get()
+		defer conn_second.Close()
+
+		res, err = redis.Int64(conn.Do("DECR", key))
+		if err != nil {
+			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return 0, err
+		}
+	}
+	return res, err
 }
