@@ -5,17 +5,19 @@ import (
     "fmt"
     "strconv"
     "helpers/iowrapper"
+	"encoding/json"
 )
 
 var(
 	pidCountMap       map[int]int
+	redisCli  		  *iowrapper.RedisClient
 )
 
 func init() {
-	pidCountMap = make(map[int]int)	
+	pidCountMap = make(map[int]int)
 }
 
-func seckilling(w http.ResponseWriter, req *http.Request) {
+func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
 		w.Write([]byte("param error !"))
@@ -46,7 +48,7 @@ func seckilling(w http.ResponseWriter, req *http.Request) {
     w.Write([]byte("Hello"))
 }
 
-func queryUserSeckillingInfo(w http.ResponseWriter, req *http.Request) {
+func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
     req.ParseForm()
 	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
 		w.Write([]byte("param error !"))
@@ -71,13 +73,33 @@ func queryUserSeckillingInfo(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	retMap := make(map[string]int)
+	retMap["errno"] = 0
+	retMap["status"] = 1
+	retMap["goodsid"] = 12
+
+	retJson, err := json.Marshal(retMap)
+	if err != nil {
+		w.Write([]byte("unknow error !"))
+		return
+	}
+	w.Write([]byte(retJson))
+
 	fmt.Println(pid)
 	fmt.Println(uid)
-
-    w.Write([]byte("Hello"))
 }
 
-func queryProductSeckillingInfo(w http.ResponseWriter, req *http.Request) {
+type ChatDb struct {
+	Uid          int `json:"userid"`
+	Sid          int `json:"goodsid"`
+}
+
+type woqu struct {
+	Error int  `json:"error"`
+	List []ChatDb `json:"list"`
+}
+
+func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
     req.ParseForm()
 	if len(req.Form["productid"]) <= 0 {
 		w.Write([]byte("param error !"))
@@ -95,30 +117,51 @@ func queryProductSeckillingInfo(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("no productid !"))
 		return
 	}
-	
-	fmt.Println(pid)
 
-    w.Write([]byte("Hello"))
+	xxx := woqu{Error:1, List:[]ChatDb{ChatDb{12,15}, ChatDb{23, 343}}}
+	retJson, err := json.Marshal(xxx)
+	if err != nil {
+		return
+	}
+	fmt.Println(string(retJson))
+
+	w.Write([]byte(retJson))
 }
 
-func initWorker() {
-	driverRedisClient := &iowrapper.RedisClient{
+func initRedisCli() error {
+	redisCli := &iowrapper.RedisClient{
 			Servers:        []string{"127.0.0.1:6379"},
-		}
-		err := driverRedisClient.Init()
-		if err != nil {
-			//logger.Error("init redis failed, err:%s", err.Error())
-			fmt.Println("error")
-			return
-		}
+	}
+
+	err := redisCli.Init()
+	return err
+}
+
+func initWorker() error{
+	// start worker
+	return nil
+}
+
+func startHttpServer() {
+	http.HandleFunc("/killing/seckilling", seckillingHandle)
+    http.HandleFunc("/killing/queryUserSeckillingInfo", queryUserSeckillingInfoHandle)
+    http.HandleFunc("/killing/queryProductSeckillingInfo", queryProductSeckillingInfoHandle)
+    http.ListenAndServe(":8001", nil)
 }
 
 func main() {
 
-	initWorker()
+	err := initRedisCli()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-    http.HandleFunc("/killing/seckilling", seckilling)
-    http.HandleFunc("/killing/queryUserSeckillingInfo", queryUserSeckillingInfo)
-    http.HandleFunc("/killing/queryProductSeckillingInfo", queryProductSeckillingInfo)
-    http.ListenAndServe(":8001", nil)
+	err = initWorker()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	startHttpServer()
 }
