@@ -7,8 +7,8 @@ import (
 )
 
 type ProductSeckingInfo struct {
-	Userid  int64
-	Goodsid int64
+	Userid  int64			`json:"userid"`
+	Goodsid int64			`json:"goodsid"`
 }
 
 func QueryProductSeckingInfo(pid string, client *iowrapper.RedisClient) (error, []ProductSeckingInfo) {
