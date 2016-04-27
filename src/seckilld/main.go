@@ -4,6 +4,7 @@ import (
     "net/http"
     "fmt"
     "strconv"
+    "helpers/iowrapper"
 )
 
 var(
@@ -101,7 +102,15 @@ func queryProductSeckillingInfo(w http.ResponseWriter, req *http.Request) {
 }
 
 func initWorker() {
-
+	driverRedisClient := &iowrapper.RedisClient{
+			Servers:        []string{"127.0.0.1:6379"},
+		}
+		err := driverRedisClient.Init()
+		if err != nil {
+			//logger.Error("init redis failed, err:%s", err.Error())
+			fmt.Println("error")
+			return
+		}
 }
 
 func main() {
