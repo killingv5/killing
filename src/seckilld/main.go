@@ -57,23 +57,11 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	pid, err := strconv.Atoi(req.Form["productid"][0])
-	if err != nil {
-		w.Write([]byte("param error !"))
-		return
-	}
-
-	uid, err := strconv.Atoi(req.Form["userid"][0])
-	if err != nil {
-		w.Write([]byte("param error !"))
-		return
-	}
-
-	_, ok := pidCountMap[pid]
-	if !ok {
-		w.Write([]byte("no productid !"))
-		return
-	}
+	//_, ok := pidCountMap[pid]
+	//if !ok {
+	//	w.Write([]byte("no productid !"))
+	//	return
+	//}
 
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
@@ -91,19 +79,11 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Write([]byte(retJson))
-
-	fmt.Println(pid)
-	fmt.Println(uid)
 }
 
-type ChatDb struct {
-	Userid          int `json:"userid"`
-	Goodsid         int `json:"goodsid"`
-}
-
-type woqu struct {
-	Error int  `json:"error"`
-	List []ChatDb `json:"list"`
+type proSeckRet struct {
+	Error int  							`json:"error"`
+	List []seckill.ProductSeckingInfo 	`json:"list"`
 }
 
 func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
@@ -113,20 +93,22 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	pid, err := strconv.Atoi(req.Form["productid"][0])
+	//_, ok := pidCountMap[pid]
+	//if !ok {
+	//	w.Write([]byte("no productid !"))
+	//	return
+	//}
+
+	var retSt proSeckRet
+	err, rets := seckill.QueryProductSeckingInfo(req.Form["productid"][0], redisCli)
 	if err != nil {
-		w.Write([]byte("param error !"))
-		return
+		retSt = proSeckRet{112, make([]seckill.ProductSeckingInfo, 0)}
+	} else {
+		retSt = proSeckRet{0, rets}
 	}
 
-	_, ok := pidCountMap[pid]
-	if !ok {
-		w.Write([]byte("no productid !"))
-		return
-	}
-
-	xxx := woqu{Error:1, List:[]ChatDb{ChatDb{12,15}, ChatDb{23, 343}}}
-	retJson, err := json.Marshal(xxx)
+	//xxx := woqu{Error:1, List:[]ChatDb{ChatDb{12,15}, ChatDb{23, 343}}}
+	retJson, err := json.Marshal(retSt)
 	if err != nil {
 		return
 	}
