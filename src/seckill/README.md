@@ -15,9 +15,6 @@
 	username = root
 	password = password
 	
-	[nihao]
-	username = root
-	password = password
 
 >初始化
 
