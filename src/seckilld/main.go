@@ -89,9 +89,9 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(uid)
 }
 
-type ChatDb struct {
-	Uid          int `json:"userid"`
-	Sid          int `json:"goodsid"`
+type xxx struct {
+	Userid          int `json:"userid"`
+	Goodsid         int `json:"goodsid"`
 }
 
 type woqu struct {
@@ -139,6 +139,9 @@ func initRedisCli() error {
 
 func initWorker() error{
 	// start worker
+	for k, _ := range pidCountMap {
+		// go xxxWorker_fun(k, redisCli)
+	}
 	return nil
 }
 
