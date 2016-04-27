@@ -7,6 +7,7 @@ import (
     "helpers/iowrapper"
 	"encoding/json"
 	"seckill"
+	"os"
 )
 
 var(
@@ -134,8 +135,7 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	w.Write([]byte(retJson))
 }
 
-func initFromConf() error {
-	configFile := "../../conf/killing.conf"
+func initFromConf(configFile string) error {
 	conf := seckill.SetConfig(configFile)
 	serverInfo := conf.GetValue("redis","serverInfo")
 	fmt.Println(serverInfo)
@@ -152,6 +152,7 @@ func initFromConf() error {
 
 	return nil
 }
+
 func initRedisCli(serverInfo string) error {
 	redisCli := &iowrapper.RedisClient{
 			Servers:        []string{serverInfo},
@@ -163,9 +164,10 @@ func initRedisCli(serverInfo string) error {
 
 func initWorker() error{
 	// start worker
-	//for k, _ := range pidCountMap {
+	for k, _ := range pidCountMap {
 		// go xxxWorker_fun(k, redisCli)
-	//}
+		fmt.Println(k)
+	}
 	return nil
 }
 
@@ -178,7 +180,12 @@ func startHttpServer() {
 
 func main() {
 
-	err := initFromConf()
+	argc := len(os.Args)
+	if (argc != 2){
+		fmt.Println("usage bin/seckill configFile")
+		return
+	}
+	err := initFromConf(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return
