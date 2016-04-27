@@ -147,13 +147,11 @@ func initFromConf(configFile string) error {
 func initRedisCli(serverInfo string) error {
 	fmt.Println(serverInfo)
 	redisCli = &iowrapper.RedisClient{
-	//		Servers:        []string{serverInfo},
-		Servers:        []string{"127.0.0.1:6379"},
+		Servers:        []string{serverInfo},
+	//	Servers:        []string{"127.0.0.1:6379"},
 	}
 
 	err := redisCli.Init()
-
-		//redisCli.Set("xxx", []byte("xxx1"))
 	return err
 }
 
