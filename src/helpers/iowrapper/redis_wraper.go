@@ -331,6 +331,30 @@ func (client *RedisClient) Hgetall(key string) ([]string, error) {
 	return res, nil
 }
 
+func (client *RedisClient) Hget(key string, field string) (string, error) {
+	conn := client.pool.Get()
+	defer conn.Close()
+
+	res, err := redis.String(conn.Do("HGET", key, field))
+	fmt.Println(res)
+	if err != nil {
+		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+			client.Servers[client.current_index], key, err.Error())
+
+		conn_second := client.pool.Get()
+		defer conn_second.Close()
+
+		res, err = redis.String(conn_second.Do("HGET", key, field))
+		if err != nil {
+			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return "", err
+		}
+	}
+
+	return res, nil
+}
+
 func (client *RedisClient) Sadd(key string, value []interface{}) (int64, error) {
 	conn := client.pool.Get()
 	defer conn.Close()
