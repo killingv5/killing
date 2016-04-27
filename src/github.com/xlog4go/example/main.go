@@ -1,7 +1,7 @@
 package main
 
 import (
-	logger "github.com/shengkehua/xlog4go"
+	logger "github.com/xlog4go"
 
 	"time"
 )
