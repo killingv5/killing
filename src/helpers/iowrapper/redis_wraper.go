@@ -404,33 +404,6 @@ func (client *RedisClient) Smembers(key string) ([]string, error) {
 	return res, nil
 }
 
-func (client *RedisClient) Hget(key string, value []interface{}) (string, error) {
-	conn := client.pool.Get(true)
-	defer conn.Close()
-
-	var input_params []interface{}
-	input_params = append(input_params, key)
-	input_params = append(input_params, value...)
-
-	res, err := redis.String(conn.Do("HGET", key, input_params...))
-	if err != nil {
-		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
-			client.Servers[client.current_index], key, err.Error())
-
-		conn_second := client.pool.Get(false)
-		defer conn_second.Close()
-
-		res, err = redis.String(conn_second.Do("HGET", key, input_params...))
-		if err != nil {
-			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
-				client.Servers[client.current_index], key, err.Error())
-			return nil, err
-		}
-	}
-
-	return res, nil
-}
-
 func (client *RedisClient) Incr(key int) {
 	conn := client.pool.Get(true)
 	defer conn.Close()
