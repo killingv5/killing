@@ -45,7 +45,6 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	} else {
     	w.Write([]byte("Hello"))
 	}
-	initWorker()
 }
 
 func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
