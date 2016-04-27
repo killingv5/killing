@@ -12,10 +12,11 @@ func Test_redis(t *testing.T) {
 	redisconsole.Init()
 	//redisconsole.Set("111", []byte("5"))
 	key := "112"
-	err, res = queryProductSeckingInfo(key, redisconsole)
+	err, res := QueryProductSeckingInfo(key, redisconsole)
 	if err != nil {
 		logger.Error("error=[商品不存在] key=[%s] err=[%s]", key, err.Error())
 	}
+	fmt.Println(len(res))
 	for i := 0; i < len(res); i++ {
 		fmt.Println(res[i].Userid, res[i].Goodsid)
 	}
