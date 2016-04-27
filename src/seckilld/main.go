@@ -6,6 +6,7 @@ import (
     "strconv"
     "helpers/iowrapper"
 	"encoding/json"
+	"seckill"
 )
 
 var(
@@ -127,10 +128,27 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 
 	w.Write([]byte(retJson))
 }
+func initFromConf() error {
+	configFile := "../../conf/killing.conf"
+	conf := seckill.SetConfig(configFile)
+	serverInfo := conf.GetValue("redis","serverInfo")
+	fmt.Println(serverInfo)
+	if err := initRedisCli(serverInfo);err != nil{
+		return err
+	}
+	productId   := conf.GetValue("product","productid")
+	productNum  := conf.GetValue("product","productnum")
+	productid, _ := strconv.Atoi(productId);
+	productnum, _ := strconv.Atoi(productNum);
+	fmt.Println(productid)
+	fmt.Println(productnum)
+	pidCountMap[productid] = productnum
 
-func initRedisCli() error {
+	return nil
+}
+func initRedisCli(serverInfo string) error {
 	redisCli := &iowrapper.RedisClient{
-			Servers:        []string{"127.0.0.1:6379"},
+			Servers:        []string{serverInfo},
 	}
 
 	err := redisCli.Init()
@@ -151,7 +169,7 @@ func startHttpServer() {
 
 func main() {
 
-	err := initRedisCli()
+	err := initFromConf()
 	if err != nil {
 		fmt.Println(err)
 		return
