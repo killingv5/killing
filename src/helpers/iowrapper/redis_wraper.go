@@ -17,13 +17,13 @@ type RedisClient struct {
 	WriteTimeoutMs int
 	ReadTimeoutMs  int
 
-	MaxIdle      int
-	MaxActive    int
-	IdleTimeoutS int
-	Password     string
+	MaxIdle        int
+	MaxActive      int
+	IdleTimeoutS   int
+	Password       string
 
-	current_index int
-	pool          *redis.Pool
+	current_index  int
+	pool           *redis.Pool
 }
 
 func (client *RedisClient) Close() {
@@ -47,9 +47,9 @@ func (client *RedisClient) Init() error {
 				index := common.RandIntn(len(client.Servers))
 				client.current_index = index
 				c, err = redis.DialTimeout("tcp", client.Servers[index],
-					time.Duration(client.ConnTimeoutMs)*time.Millisecond,
-					time.Duration(client.ReadTimeoutMs)*time.Millisecond,
-					time.Duration(client.WriteTimeoutMs)*time.Millisecond)
+					time.Duration(client.ConnTimeoutMs) * time.Millisecond,
+					time.Duration(client.ReadTimeoutMs) * time.Millisecond,
+					time.Duration(client.WriteTimeoutMs) * time.Millisecond)
 				if err != nil {
 					logger.Warn("warning=[redis_connect_failed] num=[%d] server=[%s] err=[%s]",
 						i, client.Servers[index], err.Error())
@@ -396,6 +396,56 @@ func (client *RedisClient) Smembers(key string) ([]string, error) {
 		res, err = redis.Strings(conn_second.Do("SMEMBERS", key))
 		if err != nil {
 			logger.Error("second error=[redis_smembers_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
+func (client *RedisClient) Hget(key string, value []interface{}) (string, error) {
+	conn := client.pool.Get(true)
+	defer conn.Close()
+
+	var input_params []interface{}
+	input_params = append(input_params, key)
+	input_params = append(input_params, value...)
+
+	res, err := redis.String(conn.Do("HGET", key, input_params...))
+	if err != nil {
+		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+			client.Servers[client.current_index], key, err.Error())
+
+		conn_second := client.pool.Get(false)
+		defer conn_second.Close()
+
+		res, err = redis.String(conn_second.Do("HGET", key, input_params...))
+		if err != nil {
+			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
+func (client *RedisClient) Incr(key int) {
+	conn := client.pool.Get(true)
+	defer conn.Close()
+
+	res, err := redis.Strings(conn.Do("incr", key))
+	if err != nil {
+		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
+			client.Servers[client.current_index], key, err.Error())
+
+		conn_second := client.pool.Get(false)
+		defer conn_second.Close()
+
+		res, err = redis.Strings(conn_second.Do("HGET", key, value...))
+		if err != nil {
+			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
 				client.Servers[client.current_index], key, err.Error())
 			return nil, err
 		}
