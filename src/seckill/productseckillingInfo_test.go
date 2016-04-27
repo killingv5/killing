@@ -16,6 +16,7 @@ func Test_redis(t *testing.T) {
 	if err != nil {
 		logger.Error("error=[商品不存在] key=[%s] err=[%s]", key, err.Error())
 	}
+	fmt.Println(len(res))
 	for i := 0; i < len(res); i++ {
 		fmt.Println(res[i].Userid, res[i].Goodsid)
 	}

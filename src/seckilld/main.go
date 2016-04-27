@@ -69,11 +69,12 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
 	if err != nil {
+		retMap["errno"] = 1001
+	} else {
 		retMap["errno"] = 0
 		retMap["status"] = info.Status
 		retMap["goodsid"] = info.Goodsid
-	} else {
-		retMap["errno"] = 1001
+		
 	}
 
 	retJson, err := json.Marshal(retMap)
@@ -115,6 +116,7 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	} else {
 		retSt = proSeckRet{0, rets}
 	}
+	fmt.Println(rets)
 
 	//xxx := woqu{Error:1, List:[]ChatDb{ChatDb{12,15}, ChatDb{23, 343}}}
 	retJson, err := json.Marshal(retSt)
