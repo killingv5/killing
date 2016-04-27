@@ -11,7 +11,7 @@ type ProductSeckingInfo struct {
 	Goodsid int64
 }
 
-func queryProductSeckingInfo(pid string, client *iowrapper.RedisClient) (error, []ProductSeckingInfo) {
+func QueryProductSeckingInfo(pid string, client *iowrapper.RedisClient) (error, []ProductSeckingInfo) {
 	res, err := client.Hgetall(pid)
 	if err != nil {
 		logger.Error("error=[商品不存在] key=[%s] err=[%s]", pid, err.Error())
