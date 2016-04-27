@@ -75,10 +75,15 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	retMap := make(map[string]int)
-	retMap["errno"] = 0
-	retMap["status"] = 1
-	retMap["goodsid"] = 12
+	retMap := make(map[string]int64)
+	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
+	if err != nil {
+		retMap["errno"] = 0
+		retMap["status"] = info.Status
+		retMap["goodsid"] = info.Goodsid
+	} else {
+		retMap["errno"] = 1001
+	}
 
 	retJson, err := json.Marshal(retMap)
 	if err != nil {
@@ -92,8 +97,8 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 type ChatDb struct {
-	Uid          int `json:"userid"`
-	Sid          int `json:"goodsid"`
+	Userid          int `json:"userid"`
+	Goodsid         int `json:"goodsid"`
 }
 
 type woqu struct {
@@ -129,8 +134,8 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 
 	w.Write([]byte(retJson))
 }
+
 func initFromConf(configFile string) error {
-	//configFile := "../../conf/killing.conf"
 	conf := seckill.SetConfig(configFile)
 	serverInfo := conf.GetValue("redis","serverInfo")
 	fmt.Println(serverInfo)
@@ -147,6 +152,7 @@ func initFromConf(configFile string) error {
 
 	return nil
 }
+
 func initRedisCli(serverInfo string) error {
 	redisCli := &iowrapper.RedisClient{
 			Servers:        []string{serverInfo},
@@ -158,6 +164,10 @@ func initRedisCli(serverInfo string) error {
 
 func initWorker() error{
 	// start worker
+	for k, _ := range pidCountMap {
+		// go xxxWorker_fun(k, redisCli)
+		fmt.Println(k)
+	}
 	return nil
 }
 
