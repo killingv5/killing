@@ -336,7 +336,7 @@ func (client *RedisClient) Hget(key string, field string) (string, error) {
 	defer conn.Close()
 
 	res, err := redis.String(conn.Do("HGET", key, field))
-	fmt.Println(res)
+
 	if err != nil {
 		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
 			client.Servers[client.current_index], key, err.Error())
