@@ -4,38 +4,29 @@ import (
 	"fmt"
 	"strconv"
 	"helpers/iowrapper"
-	"bytes"
-	"encoding/binary"
 )
 
 func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	productQueueName := "product_queue_" + strconv.FormatInt(productId, 10)
-	fmt.Println(productQueueName)
+	productName := "product_" + strconv.FormatInt(productId, 10)
 
 	userId, _ := redisCli.Lpop(productQueueName)
-	for userId != nil {
+	for userId != "" {
 		count, _ := redisCli.Get("count");
-		countInt := ConvertBytesToInt(count)
+		countInt, _ := strconv.ParseInt(string(count), 10, 64)
 		if countInt > 0 {
-			var uid []interface{}
-			uid = append(uid, userId)
-			status, _ := redisCli.Hget(productQueueName, uid)
-			if status == 0 {
+			status, _ := redisCli.Hget(productName, userId)
+			statusInt, _ := strconv.ParseInt(status, 10, 64)
+			if statusInt == 0 {
 				var order []interface{}
 				order = append(order, userId)
-				order = append(order, 101 - count)
-				redisCli.Hmset(productQueueName, order)
-				redisCli.Incr("count")
+				order = append(order, 101 - countInt)
+				redisCli.Hmset(productName, order)
+				fmt.Println(countInt)
+				redisCli.Decr("count")
 			}
 
 		}
 		userId, _ = redisCli.Lpop(productQueueName)
 	}
-}
-
-func ConvertBytesToInt(value []byte) int64 {
-	buf :=  bytes .NewBuffer(value)
-	var x int64
-	binary.Read(buf, binary.BigEndian, &x)
-	return x
 }

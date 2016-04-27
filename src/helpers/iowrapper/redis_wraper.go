@@ -404,25 +404,24 @@ func (client *RedisClient) Smembers(key string) ([]string, error) {
 	return res, nil
 }
 
-func (client *RedisClient) Incr(key int) {
-	conn := client.pool.Get(true)
+func (client *RedisClient) Decr(key string) (int64, error) {
+	conn := client.pool.Get()
 	defer conn.Close()
 
-	res, err := redis.Strings(conn.Do("incr", key))
+	res, err := redis.Int64(conn.Do("DECR", key))
 	if err != nil {
 		logger.Error("error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
 			client.Servers[client.current_index], key, err.Error())
 
-		conn_second := client.pool.Get(false)
+		conn_second := client.pool.Get()
 		defer conn_second.Close()
 
-		res, err = redis.Strings(conn_second.Do("HGET", key, value...))
+		res, err = redis.Int64(conn.Do("DECR", key))
 		if err != nil {
 			logger.Error("second error=[redis_hget_failed] server=[%s] key=[%s] err=[%s]",
 				client.Servers[client.current_index], key, err.Error())
-			return nil, err
+			return 0, err
 		}
 	}
-
-	return res, nil
+	return res, err
 }
