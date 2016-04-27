@@ -7,6 +7,7 @@ import (
     "helpers/iowrapper"
 	"encoding/json"
 	"seckill"
+	"os"
 )
 
 var(
@@ -128,8 +129,8 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 
 	w.Write([]byte(retJson))
 }
-func initFromConf() error {
-	configFile := "../../conf/killing.conf"
+func initFromConf(configFile string) error {
+	//configFile := "../../conf/killing.conf"
 	conf := seckill.SetConfig(configFile)
 	serverInfo := conf.GetValue("redis","serverInfo")
 	fmt.Println(serverInfo)
@@ -169,7 +170,12 @@ func startHttpServer() {
 
 func main() {
 
-	err := initFromConf()
+	argc := len(os.Args)
+	if (argc != 2){
+		fmt.Println("usage bin/seckill configFile")
+		return
+	}
+	err := initFromConf(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return
