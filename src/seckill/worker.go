@@ -11,7 +11,7 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	productName := "product_" + strconv.FormatInt(productId, 10)
 
 	
-	for {
+	//for {
 		userId, _ := redisCli.Lpop(productQueueName)
 		for userId != "" {
 			count, _ := redisCli.Get("count");
@@ -30,7 +30,10 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 
 			}
 			userId, _ = redisCli.Lpop(productQueueName)
-		}
+
+	//	}
+	//	time.Sleep(100)
+
 	}
 	
 }
