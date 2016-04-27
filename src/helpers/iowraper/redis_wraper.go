@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	logger "github.com/xlog4go"
-	"helper/common"
+	"helpers/common"
 	"time"
 )
 
