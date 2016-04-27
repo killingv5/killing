@@ -59,5 +59,6 @@ func Pushtoredis(pid string, uid string, redisCli *iowrapper.RedisClient) ( erro
 	if err != nil {
 		return err
 	}
+	
 	return err
 }

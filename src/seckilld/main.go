@@ -8,11 +8,13 @@ import (
 	"encoding/json"
 	"seckill"
 	"os"
+	logger "github.com/xlog4go"
 )
 
 var(
 	pidCountMap       map[int]int
 	redisCli  		  *iowrapper.RedisClient
+	conf              *seckill.Config
 )
 
 func init() {
@@ -38,7 +40,9 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	fmt.Println("before")
 	err = seckill.Pushtoredis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
+	fmt.Println("after")
 	if err != nil {
     	w.Write([]byte("unknow error"))
     	fmt.Println(err)
@@ -128,13 +132,13 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	w.Write([]byte(retJson))
 }
 
-func initFromConf(configFile string) error {
-	conf := seckill.SetConfig(configFile)
+func initFromConf() error {
 	serverInfo := conf.GetValue("redis","serverInfo")
 	fmt.Println(serverInfo)
 	if err := initRedisCli(serverInfo);err != nil{
 		return err
 	}
+
 	productId   := conf.GetValue("product","productid")
 	productNum  := conf.GetValue("product","productnum")
 	productid, _ := strconv.Atoi(productId);
@@ -143,6 +147,14 @@ func initFromConf(configFile string) error {
 	fmt.Println(productnum)
 	pidCountMap[productid] = productnum
 
+	logfile := conf.GetValue("log","logfile")
+	fmt.Println(logfile)
+	_ = logger.SetupLogWithConf(logfile)
+	/*
+	if err != nil{
+		return err
+	}
+	*/
 	return nil
 }
 
@@ -169,23 +181,24 @@ func startHttpServer() {
 	http.HandleFunc("/killing/seckilling", seckillingHandle)
     http.HandleFunc("/killing/queryUserSeckillingInfo", queryUserSeckillingInfoHandle)
     http.HandleFunc("/killing/queryProductSeckillingInfo", queryProductSeckillingInfoHandle)
-    http.ListenAndServe(":8001", nil)
+	port := conf.GetValue("http","port")
+    http.ListenAndServe(port, nil)
 }
 
 func main() {
 
 	argc := len(os.Args)
 	if (argc != 2){
-		fmt.Println("usage bin/seckill configFile")
+		fmt.Println("usage: bin/seckill configFile")
 		return
 	}
 
-	err := initFromConf(os.Args[1])
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	conf = seckill.SetConfig(os.Args[1])
 
+	err := initFromConf()
+	if err!=nil{
+		return 
+	}
 	err = initWorker()
 	if err != nil {
 		fmt.Println(err)
