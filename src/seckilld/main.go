@@ -144,8 +144,8 @@ func initFromConf(configFile string) error {
 }
 
 func initRedisCli(serverInfo string) error {
-	redisCli := &iowrapper.RedisClient{
-			Servers:        []string{serverInfo},
+	redisCli =&iowrapper.RedisClient{
+Servers:        []string{serverInfo},
 	}
 
 	err := redisCli.Init()
