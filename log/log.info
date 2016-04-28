@@ -1,3 +1,0 @@
-2016/04/28 14:29:34 [INFO] <redis_wraper.go:66> info=[redis_connect_ok] num=[0] server=[127.0.0.1:6379]
-2016/04/28 14:30:24 [INFO] <redis_wraper.go:66> info=[redis_connect_ok] num=[0] server=[127.0.0.1:6379]
-2016/04/28 14:30:24 [INFO] <main.go:172> g_query_user_secking_info||timestamp=2016-04-28 14:30:24||ret={"errno":0,"goodsid":-99,"status":1}
