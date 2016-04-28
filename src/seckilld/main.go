@@ -115,7 +115,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	err = seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
 	if err != nil {
 		//retMap["errno"] = seckill.ERRNO_SECKILL_FAIL
-		w.Write([]byte("unknow error")
+		w.Write([]byte("unknow error"))
 		logger.Error("errno=[%s],err=[%s]",seckill.ERRNO_SECKILL_FAIL,err.Error())
 	} else {
 		w.Write([]byte("排队中，结果请稍后查询"))
