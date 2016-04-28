@@ -26,24 +26,27 @@ type UserSeckingInfo struct {
 **/
 func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClient) (*UserSeckingInfo, error) {
 	res, err := client.Hget(PRODUCT_HASH + pid, uid)
-	fmt.Println(res)
 
 	//秒杀结果中没有(pid,uid)，表示未秒中
 	if res == "" {
 		if err !=nil {
-			logger.Warn("秒杀失败", err.Error())			
+			logger.Warn("errno=[%s] err=[%s]",ERRNO_SECKILING_FAILED, err.Error())
 		}
-		fmt.Println(err)
+		//fmt.Println(err)
 		return &UserSeckingInfo{Status:2, Goodsid:0}, err
 	}
 	
 	gid, err := strconv.ParseInt(res, 10, 64)
-	fmt.Println(gid)
+	if err !=nil {
+		logger.Error("errno=[%s] err=[%s]",ERRNO_PARSE_FAILED, err.Error())
+	}
+	//fmt.Println(gid)
+
 	if gid == 0 {//有结果，但是商品编号为0，表示正在秒杀中
 		if err !=nil {
-			logger.Warn("秒杀中", err.Error())			
+			logger.Warn("errno=[%s] err=[%s]",ERRNO_SECKILLING, err.Error())
 		}
-		fmt.Println(err)
+		//fmt.Println(err)
 		return &UserSeckingInfo{Status:3, Goodsid:0}, err
 	}
 	fmt.Println(err)

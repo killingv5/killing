@@ -8,11 +8,15 @@ import (
 	"encoding/json"
 	"seckill"
 	"os"
+	logger "github.com/xlog4go"
+	"time"
 )
 
 var(
 	pidCountMap       map[int]int
 	redisCli  		  *iowrapper.RedisClient
+	serverInfo        string
+	logFile           string
 )
 
 func init() {
@@ -66,17 +70,27 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//retMap := make(map[string]int64)
 	err = seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
 	if err != nil {
-    	w.Write([]byte("unknow error"))
-    	fmt.Println(err)
+		//retMap["errno"] = seckill.ERRNO_SECKILL_FAIL
+		logger.Error("errno=[%s],err=[%s]",seckill.ERRNO_SECKILL_FAIL,err.Error())
 	} else {
-    	w.Write([]byte("排队中，结果请稍后查询"))
+		w.Write([]byte("排队中，结果请稍后查询"))
 	}
+
+	/*retJson, err := json.Marshal(retMap)
+	if err != nil {
+		w.Write([]byte("Unknow error !"))
+		logger.Error("retMap to retJson falied, err:%s",err.Error())
+		return
+	}
+	w.Write([]byte(retJson))
+	//fmt.Println(err)*/
 }
 
 func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
-    req.ParseForm()
+    	req.ParseForm()
 	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
 		w.Write([]byte("param error !"))
 		return
@@ -97,9 +111,10 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
 	if err != nil {
-		retMap["errno"] = 1001
+		retMap["errno"] = seckill.ERRNO_QUE_UERSECKILL_FAIL
+		logger.Error("errno=[%s], err=[%s]",seckill.ERRNO_QUE_UERSECKILL_FAIL,err.Error())
 	} else {
-		retMap["errno"] = 0
+		retMap["errno"] = seckill.ERRNO_NONE
 		retMap["status"] = info.Status
 		retMap["goodsid"] = info.Goodsid
 		
@@ -107,14 +122,15 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 
 	retJson, err := json.Marshal(retMap)
 	if err != nil {
-		w.Write([]byte("unknow error !"))
+		w.Write([]byte("Unknow error !"))
 		return
 	}
 	w.Write([]byte(retJson))
+	logger.Info("g_query_user_secking_info||timestamp=%s||ret=%s",time.Now().Format("2006-01-02 15:04:05"),retJson)
 }
 
 type proSeckRet struct {
-	Error int  							`json:"error"`
+	Error int  				`json:"error"`
 	List []seckill.ProductSeckingInfo 	`json:"list"`
 }
 
@@ -140,9 +156,9 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	var retSt proSeckRet
 	err, rets := seckill.QueryProductSeckingInfo(req.Form["productid"][0], redisCli)
 	if err != nil {
-		retSt = proSeckRet{112, make([]seckill.ProductSeckingInfo, 0)}
+		retSt = proSeckRet{seckill.ERRNO_QUE_PRODUCTSECKILL_FAIL, make([]seckill.ProductSeckingInfo, 0)}
 	} else {
-		retSt = proSeckRet{0, rets}
+		retSt = proSeckRet{seckill.ERRNO_NONE, rets}
 	}
 	fmt.Println(rets)
 
@@ -151,24 +167,24 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	if err != nil {
 		return
 	}
-	fmt.Println(string(retJson))
-
 	w.Write([]byte(retJson))
+	logger.Info("g_query_product_secking_info||timestamp=%s||ret=%s",time.Now().Format("2006-01-02 15:04:05"),retJson)
+
 }
 
 func initFromConf(configFile string) error {
 	conf := seckill.SetConfig(configFile)
-	serverInfo := conf.GetValue("redis","serverInfo")
-	fmt.Println(serverInfo)
-	if err := initRedisCli(serverInfo);err != nil{
-		return err
-	}
+	serverInfo = conf.GetValue("redis","serverInfo")
+	//fmt.Println(serverInfo)
+	//init logger
+	logFile = conf.GetValue("log","logfile")
+
 	productId   := conf.GetValue("product","productid")
 	productNum  := conf.GetValue("product","productnum")
 	productid, _ := strconv.Atoi(productId);
 	productnum, _ := strconv.Atoi(productNum);
-	fmt.Println(productid)
-	fmt.Println(productnum)
+	//fmt.Println(productid)
+	//fmt.Println(productnum)
 	pidCountMap[productid] = productnum
 
 	return nil
@@ -217,17 +233,32 @@ func main() {
 
 	err := initFromConf(os.Args[1])
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("init config failed,err:%s",err.Error())
+		return
+	}
+
+	err = logger.SetupLogWithConf(logFile)
+	if  err!=nil{
+		fmt.Println("init log fail: %s", err.Error())
+		return
+	}
+	defer logger.Close()
+
+	err = initRedisCli(serverInfo)
+	if err != nil{
+		logger.Error("init redis failed,err:%s",err.Error())
 		return
 	}
 
 	err = initWorker()
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		logger.Error("init worker failed,err:%s",err.Error())
 		return
 	}
+
 	go startMisServer()
-	
+
 	startHttpServer()
 	
 }

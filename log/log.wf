@@ -1,0 +1,8 @@
+2016/04/28 12:10:47 [ERROR] <redis_wraper.go:366> error=[redis_hget_failed] server=[127.0.0.1:6379] key=[product_hash_111] err=[redigo: nil returned]
+2016/04/28 12:10:47 [ERROR] <redis_wraper.go:374> second error=[redis_hget_failed] server=[127.0.0.1:6379] key=[product_hash_111] err=[redigo: nil returned]
+2016/04/28 12:10:47 [WARN] <userskinfo.go:33> errno=[%!s(int=50002)] err=[redigo: nil returned]
+2016/04/28 12:10:47 [ERROR] <main.go:115> errno=[%!s(int=10001)], err=[redigo: nil returned]
+2016/04/28 12:10:58 [ERROR] <redis_wraper.go:366> error=[redis_hget_failed] server=[127.0.0.1:6379] key=[product_hash_111] err=[redigo: nil returned]
+2016/04/28 12:10:58 [ERROR] <redis_wraper.go:374> second error=[redis_hget_failed] server=[127.0.0.1:6379] key=[product_hash_111] err=[redigo: nil returned]
+2016/04/28 12:10:58 [WARN] <userskinfo.go:33> errno=[%!s(int=50002)] err=[redigo: nil returned]
+2016/04/28 12:10:58 [ERROR] <main.go:115> errno=[%!s(int=10001)], err=[redigo: nil returned]

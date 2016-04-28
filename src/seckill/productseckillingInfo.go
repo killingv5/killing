@@ -14,7 +14,7 @@ type ProductSeckingInfo struct {
 func QueryProductSeckingInfo(pid string, client *iowrapper.RedisClient) (error, []ProductSeckingInfo) {
 	res, err := client.Hgetall(PRODUCT_HASH + pid)
 	if err != nil {
-		logger.Error("error=[商品不存在] key=[%s] err=[%s]", pid, err.Error())
+		logger.Error("errno=[%s] key=[%s] err=[%s]", ERRNO_PRODUCT_NOT_EXIST,pid, err.Error())
 		return err, nil
 	}
 	productlist := []ProductSeckingInfo{}
@@ -23,9 +23,11 @@ func QueryProductSeckingInfo(pid string, client *iowrapper.RedisClient) (error, 
 		value := res[i+1]
 		nameformate, err := strconv.ParseInt(name, 10, 64)
 		valueformate, err := strconv.ParseInt(value, 10, 64)
-		if err == nil && valueformate > 0 {
-			productlist = append(productlist, ProductSeckingInfo{nameformate, valueformate})
+		productlist = append(productlist, ProductSeckingInfo{nameformate, valueformate})
+		if err != nil{
+			logger.Error("parse res failed,%s",err.Error())
 		}
 	}
+
 	return nil, productlist
 }
