@@ -15,9 +15,9 @@ import (
 //)
 
 type ProductInfo struct {
-	Pid            string
-	Pnum           int64
-	Seckillingtime string
+	Pid            string 	`json:"pid"`
+	Pnum           int64 	`json:"pnum"`	
+	Seckillingtime string 	`json:"seckilltime"`
 }
 
 //merge the values of value field to a string
