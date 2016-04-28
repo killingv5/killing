@@ -8,21 +8,25 @@ import (
 	"helpers/iowrapper"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const (
-	PRODUCTINFO = "product_info"
-)
+//const (
+//	PRODUCTINFO = "product_info"
+//)
+//const TIMEFORMAT = "2006-01-02 15:04:05"
 
 type ProductInfo struct {
-	Pid            string
-	Pnum           int64
-	Seckillingtime string
+	Pid            string    `json:"pid"`
+	Pnum           int64     `json:"pnum"`
+	Seckillingtime time.Time `json:"seckilltime"`
 }
 
 //merge the values of value field to a string
 func mergeProductInfo(pi ProductInfo) (string, error) {
-	mergeStr := (strconv.FormatInt(pi.Pnum, 10)) + "|" + (pi.Seckillingtime)
+	//将time.Time格式的时间转换成字符串
+	t_string := pi.Seckillingtime.Format("2006-01-02 15:04:05")
+	mergeStr := (strconv.FormatInt(pi.Pnum, 10)) + "|" + (t_string)
 	return mergeStr, nil
 }
 
@@ -34,8 +38,10 @@ func unmergeProductInfo(pid string, str string) (ProductInfo, error) {
 		//		fmt.Printf("\nstr:%+v\n", str)
 		return ProductInfo{}, errors.New("product info error")
 	}
+
 	pnum_int64, _ := strconv.ParseInt(tempStrs[0], 10, 64)
-	pi := ProductInfo{Pid: pid, Pnum: pnum_int64, Seckillingtime: tempStrs[1]}
+	t_Time, _ := time.Parse(TIMEFORMAT, tempStrs[1])
+	pi := ProductInfo{Pid: pid, Pnum: pnum_int64, Seckillingtime: t_Time}
 
 	return pi, nil
 }

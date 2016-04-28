@@ -62,6 +62,9 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) error {
 	return nil
 }
 
+``/**
+* 清空数据库
+**/
 func flushHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	if len(req.Form["productid"]) <= 0 {
@@ -87,6 +90,33 @@ func flushHandle(w http.ResponseWriter, req *http.Request) {
 		//fmt.Println(err)
 	} else {
 		w.Write([]byte("数据清空成功！"))
+	}
+}
+
+/**
+* 添加商品
+**/
+func addProductHandle(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	if len(req.Form["productid"]) <= 0 || len(req.Form["productnum"]) <=0 || len(req.Form["starttime"]) <=0 {
+		w.Write([]byte("param error !"))
+		return
+	}
+	seckill.AddProduct(req.Form["productid"][0], req.Form["productnum"][0], req.Form["starttime"][0], redisCli)
+	w.Write([]byte("商品添加成功！"))
+}
+
+/**
+* 查询商品列表
+**/
+func getProductListHandle(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	str, err := seckill.GetProductList(redisCli)
+	if err != nil {
+    	w.Write([]byte("查询商品列表失败！"))
+    	fmt.Println(err)
+	} else {
+    	w.Write([]byte(str))
 	}
 }
 
@@ -271,6 +301,8 @@ func startHttpServer() {
 
 func startMisServer() {
 	http.HandleFunc("/killing/cleandb", flushHandle)
+	http.HandleFunc("/killing/addproduct", addProductHandle)
+	http.HandleFunc("/killing/getproductlist", getProductListHandle)
 	http.ListenAndServe(":9001", nil)
 }
 

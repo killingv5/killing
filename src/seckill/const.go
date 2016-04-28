@@ -19,4 +19,6 @@ const (
 	SECKILLING_FAIL = 2
 	PRODUCT_NOT_EXIST = 3
 
+	PRODUCTINFO = "product_info"
+	TIMEFORMAT  = "2006-01-02 15:04:05"
 )

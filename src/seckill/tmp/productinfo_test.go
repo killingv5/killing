@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"helpers/iowrapper"
 	"testing"
+	"time"
 )
 
-func TestHello(t *testing.T) {
+func TestHello22(t *testing.T) {
 	fmt.Println("hello")
 	var client *iowrapper.RedisClient = &iowrapper.RedisClient{Servers: []string{"127.0.0.1:6379"}}
 
 	client.Init()
-	pi1 := ProductInfo{"111", 100, "2016-04-29 10:00:00"}
-	pi2 := ProductInfo{"222", 121, "2016-04-29 11:00:00"}
-	pi3 := ProductInfo{"333", 150, "2016-04-29 12:00:00"}
+	t2, _ := time.Parse(TIMEFORMAT, "2016-04-29 12:00:00")
+	t3, _ := time.Parse(TIMEFORMAT, "2017-04-29 23:12:00")
+	pi1 := ProductInfo{"111", 100, time.Now()}
+	pi2 := ProductInfo{"222", 121, t2}
+	pi3 := ProductInfo{"333", 150, t3}
 
 	err1 := SetProductInfo(pi1, client)
 	fmt.Println(err1)
