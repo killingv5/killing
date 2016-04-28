@@ -4,8 +4,7 @@ import (
 	"helpers/iowrapper"
 	logger "github.com/xlog4go"
 	"strconv"
-	"fmt"
-)	
+)
 
 /**
 * 用户秒杀结果
