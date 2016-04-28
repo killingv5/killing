@@ -13,7 +13,7 @@ func init() {
 
 func GetPidState(pid int) int {
 	if val, ok := keepermap[fmt.Printf("%v", pid)]; ok {
-		return val.state
+		return val.State
 	}
 	return STATE_NOT_EXIST
 }
@@ -26,14 +26,14 @@ const (
 )
 
 type Keeper struct {
-	state     int
-	starttime time.Time
+	State     int
+	Starttime time.Time
 }
 
 func (kp *Keeper) Run() {
-	timediff := kp.starttime.Sub(time.Now())
+	timediff := kp.Starttime.Sub(time.Now())
 	time.Sleep(timediff)
-	kp.state = STATE_ING
+	kp.State = STATE_ING
 }
 
 func ControlState(client *iowrapper.RedisClient) {
@@ -48,15 +48,15 @@ func ControlState(client *iowrapper.RedisClient) {
 			pid := infolist[i].Pid
 			_, ok := keepermap[pid]
 			if ok {
-				newstarttime := infolist[i].seckillingtime
-				timediff = newstarttime.Sub(keepermap[pid].starttime)
+				newstarttime := infolist[i].Seckillingtime
+				timediff = newstarttime.Sub(keepermap[pid].Starttime)
 				if timediff != 0 {
 					delete(keepermap, pid)
-					keepermap[pid] = &Keeper{STATE_NOT_STARTED, newstarttime}
+					keepermap[pid] = &Keeper{STATE_NOT_STARTED, newStarttime}
 					go keepermap[pid].Run()
 				}
 			} else {
-				starttime := infolist[i].seckillingtime
+				starttime := infolist[i].Seckillingtime
 				keepermap[pid] = &Keeper{STATE_NOT_STARTED, starttime}
 				go keepermap[pid].Run()
 			}
@@ -68,7 +68,7 @@ func ControlState(client *iowrapper.RedisClient) {
 				continue
 			}
 			if infocount <= 0 {
-				keepermap[key].state = STATE_ENDED
+				keepermap[key].State = STATE_ENDED
 			}
 		}
 
