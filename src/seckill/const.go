@@ -1,9 +1,5 @@
 package seckill
 
-import (
-	"strconv"
-	"encoding/json"
-)
 const (
 	//stuct in redis
 	PRODUCT_QUEUE = "product_queue_"
@@ -49,6 +45,8 @@ const (
 	ERRNO_LACK_USRID        = 50004
 	ERRNO_LACK_SIGN         = 50005
 	ERRNO_SIGN_ERR          = 50006
+	ERROR_SECK_END 			= 50007	
+	ERROR_SECK_NOT_START 	= 50008
 
 	ERRNO_PARA_NUM          = 60000
 	ERRNO_PARSE_FAILED      = 60001
@@ -56,38 +54,23 @@ const (
 	ERRNO_UNKNOW            = 70001
 )
 
-var errmsg map[int]string
+var Errmsg map[int]string
 
 func init() {
-	errmsg = make(map[int]string)
-	errmsg[ERRNO_NONE] = "成功"
-	errmsg[ERRNO_SECKILL_FAIL] = "查询失败"
-	errmsg[ERRNO_QUE_UERSECKILL_FAIL] = "查询失败"
-	errmsg[ERRNO_QUE_PRODUCTSECKILL_FAIL] = "查询失败"
-	errmsg[ERRNO_SECKILLING] = "正在秒杀"
-	errmsg[ERRNO_SECKILING_FAILED] = "秒杀失败"
-	errmsg[ERRNO_PRODUCT_NOT_EXIST] = "商品不存在"
-	errmsg[ERRNO_LACK_PROID] = "缺少商品ID"
-	errmsg[ERRNO_LACK_USRID] = "缺少用户ID"
-	errmsg[ERRNO_LACK_SIGN] = "缺少校验值"
-	errmsg[ERRNO_SIGN_ERR] = "信号校验错误"
-	errmsg[ERRNO_PARA_NUM] = "参数不合法"
-	errmsg[ERRNO_UNKNOW] = "unknow error"
-}
-
-func Errno2Msg(errno int) string {
-	msg, ok := errmsg[errno]
-	if !ok {
-		return "unknow error"
-	} else {
-		return msg
-	}
-}
-
-func MakeErrRet(err int) string {
-	retMap := make(map[string]string)
-	retMap["errno"] = strconv.Itoa(err)
-	retMap["msg"] = Errno2Msg(err)
-	retJson, _ := json.Marshal(retMap)
-	return string(retJson)
+	Errmsg = make(map[int]string)
+	Errmsg[ERRNO_NONE] = "成功"
+	Errmsg[ERRNO_SECKILL_FAIL] = "查询失败"
+	Errmsg[ERRNO_QUE_UERSECKILL_FAIL] = "查询失败"
+	Errmsg[ERRNO_QUE_PRODUCTSECKILL_FAIL] = "查询失败"
+	Errmsg[ERRNO_SECKILLING] = "正在秒杀"
+	Errmsg[ERRNO_SECKILING_FAILED] = "秒杀失败"
+	Errmsg[ERRNO_PRODUCT_NOT_EXIST] = "商品不存在"
+	Errmsg[ERRNO_LACK_PROID] = "缺少商品ID"
+	Errmsg[ERRNO_LACK_USRID] = "缺少用户ID"
+	Errmsg[ERRNO_LACK_SIGN] = "缺少校验值"
+	Errmsg[ERRNO_SIGN_ERR] = "信号校验错误"
+	Errmsg[ERROR_SECK_END] = "活动结束,稍后请查询结果"
+	Errmsg[ERROR_SECK_NOT_START] = "秒杀未开始!"
+	Errmsg[ERRNO_PARA_NUM] = "参数不合法"
+	Errmsg[ERRNO_UNKNOW] = "unknow error"
 }
