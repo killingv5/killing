@@ -25,13 +25,6 @@ func GetPidState(pid string) int {
 	return STATE_NOT_EXIST
 }
 
-const (
-	STATE_NOT_STARTED = 0
-	STATE_ING         = 1
-	STATE_ENDED       = 2
-	STATE_NOT_EXIST   = 3
-)
-
 func (kp *Keeper) Run() {
 	timediff := kp.Starttime.Sub(time.Now())
 	time.Sleep(timediff)
