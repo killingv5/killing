@@ -7,15 +7,13 @@ import (
 	"fmt"
 )
 
-var Flag bool
 var PidFlag map[int64]bool
 
 func init() {
-	Flag = true
 	PidFlag = make(map[int64]bool)
 }
 
-func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
+func DealRequestQueue(productId int64, productTotal int64, redisCli *iowrapper.RedisClient)  {
 	productType := strconv.FormatInt(productId, 10)
 	countType := COUNT_TYPE + productType
 	productQueueName := PRODUCT_QUEUE + productType
@@ -39,7 +37,7 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 			if res == 1 {
 				var order []interface{}
 				order = append(order, userId)
-				order = append(order, 101 - countInt)
+				order = append(order, productTotal + 1 - countInt)
 				redisCli.Hmset(productName, order)
 				redisCli.Decr(countType)
 				logger.Info("Order: userId=[%s],goodId=[%d]", order[0],order[1])
@@ -50,7 +48,7 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	END:
 	{
 		logger.Info("Seckilling Done")
-		fmt.Print("done")
+		fmt.Printf("Product ID: %d, done!\n", productId)
 		PidFlag[productId] = false
 	}
 }

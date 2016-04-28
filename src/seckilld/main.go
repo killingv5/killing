@@ -27,6 +27,7 @@ var (
 func init() {
 	pidCountMap = make(map[int]int)
 	needCheckSign = false
+	fmt.Printf("Web服务已启动,服务中......\n")
 }
 
 func paramCheck(req *http.Request, needUid bool, needSign bool) error {
@@ -116,7 +117,7 @@ func addProductHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	pidCountMap[pid] = count
-	go seckill.DealRequestQueue(int64(pid), redisCli)
+	go seckill.DealRequestQueue(int64(pid), int64(count), redisCli)
 }
 
 /**
