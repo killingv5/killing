@@ -209,6 +209,7 @@ type proSeckRet struct {
 }
 
 func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
 	err := paramCheck(req, false, needCheckSign)
 	if err != nil {
 		w.Write([]byte(err.Error()))
