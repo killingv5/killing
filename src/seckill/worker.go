@@ -42,7 +42,7 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 				order = append(order, 101 - countInt)
 				redisCli.Hmset(productName, order)
 				redisCli.Decr(countType)
-				logger.Info("Order: %s", order)
+				logger.Info("Order: userId=[%s],goodId=[%d]", order[0],order[1])
 			}
 		}
 	}

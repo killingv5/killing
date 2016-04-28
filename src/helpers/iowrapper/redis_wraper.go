@@ -62,7 +62,7 @@ func (client *RedisClient) Init() error {
 					}
 				}
 				if err == nil {
-					logger.Info("info=[redis_connect_ok] num=[%d] server=[%s] err=[%s]",
+					logger.Info("info=[redis_connect_ok] num=[%d] server=[%s]",
 						i, client.Servers[index])
 					break
 				}
@@ -301,6 +301,29 @@ func (client *RedisClient) Hkeys(key string) ([]string, error) {
 		res, err = redis.Strings(conn_second.Do("HKEYS", key))
 		if err != nil {
 			logger.Error("second error=[redis_hkeys_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
+func (client *RedisClient) Keys(key string) ([]string, error) {
+	conn := client.pool.Get()
+	defer conn.Close()
+
+	res, err := redis.Strings(conn.Do("KEYS", key))
+	if err != nil {
+		logger.Error("error=[redis_keys_failed] server=[%s] key=[%s] err=[%s]",
+			client.Servers[client.current_index], key, err.Error())
+
+		conn_second := client.pool.Get()
+		defer conn_second.Close()
+
+		res, err = redis.Strings(conn_second.Do("KEYS", key))
+		if err != nil {
+			logger.Error("second error=[redis_keys_failed] server=[%s] key=[%s] err=[%s]",
 				client.Servers[client.current_index], key, err.Error())
 			return nil, err
 		}
