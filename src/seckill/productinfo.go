@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-const (
-	PRODUCTINFO = "product_info"
-)
+//const (
+//	PRODUCTINFO = "product_info"
+//)
 
 type ProductInfo struct {
 	Pid            string
