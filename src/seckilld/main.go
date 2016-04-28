@@ -174,7 +174,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		errno = seckill.ERROR_SECK_NOT_START
 		return
 	case seckill.STATE_ENDED:
-		w.Write([]byte("秒杀已结束!"))
+		errno = seckill.ERROR_SECK_END
 		return
 	case seckill.STATE_NOT_EXIST:
 		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
