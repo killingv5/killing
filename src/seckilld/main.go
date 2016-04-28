@@ -31,17 +31,13 @@ func init() {
 	fmt.Printf("Web服务已启动,服务中......\n")
 }
 
-
-
 func paramCheck(req *http.Request, needUid bool, needSign bool) int {
 	if len(req.Form["productid"]) <= 0 {
 		return seckill.ERRNO_LACK_PROID
-		//return errors.New("缺少商品信息!")
 	}
 
 	if needUid && len(req.Form["userid"]) <= 0 {
 		return seckill.ERRNO_LACK_USRID
-		//return errors.New("缺失用户信息!")
 	}
 
 	if !needSign {
@@ -50,7 +46,6 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) int {
 
 	if len(req.Form["sign"]) <= 0 {
 		return seckill.ERRNO_LACK_SIGN
-		//return errors.New("服务器未收到信息!")
 	}
 
 	var uidPid string
@@ -65,7 +60,6 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) int {
 
 	if !strings.EqualFold(req.Form["sign"][0], hex.EncodeToString(h.Sum(nil))) {
 		return seckill.ERRNO_SIGN_ERR
-		//return errors.New("sign error")
 	}
 
 	return seckill.ERRNO_NONE
@@ -96,7 +90,6 @@ func flushHandle(w http.ResponseWriter, req *http.Request) {
 	err = seckill.CleanProduct(req.Form["productid"][0], redisCli)
 	if err != nil {
 		w.Write([]byte("数据清空失败！"))
-		//fmt.Println(err)
 	} else {
 		w.Write([]byte("数据清空成功！"))
 	}
@@ -149,18 +142,15 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte(seckill.MakeErrRet(errno)))
 	}()
 
-	//返回状态码,并复制给status
 	errNo := paramCheck(req, true, needCheckSign)
 	if errNo != seckill.ERRNO_NONE {
 		errno = errNo
-		//w.Write([]byte(err.Error()))
 		return
 	}
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		errno = seckill.ERRNO_PARA_NUM
-		//w.Write([]byte("参数输入错误!"))
 		return
 	}
 
@@ -174,11 +164,9 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	switch state {
 	case seckill.STATE_NOT_STARTED:
 		errno = seckill.ERROR_SECK_NOT_START
-		//w.Write([]byte("秒杀未开始!"))
 		return
 	case seckill.STATE_NOT_EXIST:
 		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
-		//w.Write([]byte("商品信息错误!"))	
 		return
 	}
 
@@ -217,28 +205,24 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	errNo := paramCheck(req, true, needCheckSign)
 	if errNo != seckill.ERRNO_NONE {
 		errno = errNo
-		//w.Write([]byte(err.Error()))
 		return
 	}
 
 	_ , err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		errno = seckill.ERRNO_PARA_NUM
-		//w.Write([]byte("参数输入错误!"))
 		return
 	}
 
 	state := seckill.GetPidState(req.Form["productid"][0])
 	if state == seckill.STATE_NOT_EXIST {
 		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
-		//w.Write([]byte("商品信息错误!"))	
 		return
 	}
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		errno = seckill.ERRNO_PARA_NUM
-		//w.Write([]byte("参数输入错误!"))
 		return
 	}
 
@@ -277,25 +261,21 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 		}
 	}()
 
-	//var status int64
 	errNo := paramCheck(req, false, needCheckSign)
 	if errNo != seckill.ERRNO_NONE {
 		errno = errNo
-		//w.Write([]byte(err.Error()))
 		return
 	}
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		errno = seckill.ERRNO_PARA_NUM
-		//w.Write([]byte("参数输入错误!"))
 		return
 	}
 
 	_, ok := pidCountMap[pid]
 	if !ok {
 		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
-		//w.Write([]byte("商品信息不存在!"))
 		return
 	}
 
@@ -306,12 +286,10 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	} else {
 		retSt = proSeckRet{seckill.ERRNO_NONE, rets}
 	}
-	// fmt.Println(rets)
 
 	retJson, err = json.Marshal(retSt)
 	if err != nil {
 		errno = seckill.ERRNO_UNKNOW
-		//w.Write([]byte("商品信息不存在!"))
 		return
 	}
 	logger.Info("g_query_product_secking_info||timestamp=%s||ret=%s", time.Now().Format("2006-01-02 15:04:05"), retJson)
