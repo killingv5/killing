@@ -3,6 +3,7 @@ package seckill
 import (
 	"helpers/iowrapper"
 	"time"
+	// "fmt"
 
 	logger "github.com/xlog4go"
 )
@@ -34,13 +35,19 @@ const (
 
 func (kp *Keeper) Run() {
 	timediff := kp.Starttime.Sub(time.Now())
+	// fmt.Printf("state update time:[%+v]\n",time.Now())
+	// fmt.Printf("state update time:[%+v]\n",kp.Starttime)
+	// fmt.Printf("state update after:[%+v]\n",timediff)
 	time.Sleep(timediff)
+	// fmt.Printf("state update count:[%+v]",kp)
+
 	kp.State = STATE_ING
 }
 
 func ControlState(client *iowrapper.RedisClient) {
 	for {
 		time.Sleep(time.Second)
+		// fmt.Println("control count")
 		infolist, err := GetAllProductInfo(client)
 		if err != nil {
 			logger.Error("GetAllProductInfo Failed! err=[%s]", err.Error())

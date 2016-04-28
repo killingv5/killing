@@ -40,7 +40,7 @@ func unmergeProductInfo(pid string, str string) (ProductInfo, error) {
 	}
 
 	pnum_int64, _ := strconv.ParseInt(tempStrs[0], 10, 64)
-	t_Time, _ := time.Parse(TIMEFORMAT, tempStrs[1])
+	t_Time, _ := time.ParseInLocation(TIMEFORMAT, tempStrs[1], time.Local)
 	pi := ProductInfo{Pid: pid, Pnum: pnum_int64, Seckillingtime: t_Time}
 
 	return pi, nil
