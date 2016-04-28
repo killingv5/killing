@@ -12,5 +12,5 @@ func TestDealRequestQueue(t *testing.T) {
 	}
 	err := redisCli.Init()
 	fmt.Println(err)
-	DealRequestQueue(111, redisCli)
+	DealRequestQueue(111, 100, redisCli)
 }

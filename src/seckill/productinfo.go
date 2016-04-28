@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-//const (
-//	PRODUCTINFO = "product_info"
-//)
-//const TIMEFORMAT = "2006-01-02 15:04:05"
-
 type ProductInfo struct {
 	Pid            string    `json:"pid"`
 	Pnum           int64     `json:"pnum"`
@@ -33,9 +28,7 @@ func mergeProductInfo(pi ProductInfo) (string, error) {
 //unmerge a string to the kinds of values
 func unmergeProductInfo(pid string, str string) (ProductInfo, error) {
 	tempStrs := strings.Split(str, "|")
-	//	fmt.Printf("\ntmpstr:%+v\n", len(tempStrs))
 	if len(tempStrs) < 2 {
-		//		fmt.Printf("\nstr:%+v\n", str)
 		return ProductInfo{}, errors.New("product info error")
 	}
 
@@ -80,7 +73,6 @@ func GetProductInfo(pid string, redisCli *iowrapper.RedisClient) (ProductInfo, e
 //Get all product information from a redis hash map
 func GetAllProductInfo(redisCli *iowrapper.RedisClient) ([]ProductInfo, error) {
 	tempStr, err := redisCli.Hgetall(PRODUCTINFO)
-	//fmt.Printf("tmpstr:%+v,err:%v", tempStr, err)
 
 	products := map[string]string{}
 	productInfos := []ProductInfo{}
@@ -91,7 +83,6 @@ func GetAllProductInfo(redisCli *iowrapper.RedisClient) ([]ProductInfo, error) {
 
 	for k, v := range products {
 		pi, err := unmergeProductInfo(k, v)
-		//fmt.Printf("[pi]:%v,err:%v", pi, err)
 		if err == nil {
 			productInfos = append(productInfos, pi)
 		}

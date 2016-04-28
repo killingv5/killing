@@ -13,6 +13,13 @@ func init() {
 	PidFlag = make(map[int64]bool)
 }
 
+/**
+ *	1.从请求队列中阻塞读请求
+ *  2.判断商品当前剩余数量,count==0, 秒杀结束,否则继续
+ *  3.userId集合判重
+ *  4.写订单信息表
+ *  5.商品数量减一
+ */
 func DealRequestQueue(productId int64, productTotal int64, redisCli *iowrapper.RedisClient)  {
 	productType := strconv.FormatInt(productId, 10)
 	countType := COUNT_TYPE + productType
