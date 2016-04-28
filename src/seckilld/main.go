@@ -19,6 +19,7 @@ import (
 var (
 	pidCountMap       map[int]int
 	redisCli                  *iowrapper.RedisClient
+	conf              *seckill.Config
 	serverInfo string
 	logFile string
 	needCheckSign bool
@@ -314,7 +315,7 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 }
 
 func initFromConf(configFile string) error {
-	conf := seckill.SetConfig(configFile)
+	conf = seckill.SetConfig(configFile)
 	serverInfo = conf.GetValue("redis", "serverInfo")
 
 	logFile = conf.GetValue("log", "logfile")
@@ -348,14 +349,16 @@ func startHttpServer() {
 	http.HandleFunc("/killing/seckilling", seckillingHandle)
 	http.HandleFunc("/killing/queryUserSeckillingInfo", queryUserSeckillingInfoHandle)
 	http.HandleFunc("/killing/queryProductSeckillingInfo", queryProductSeckillingInfoHandle)
-	http.ListenAndServe(":8001", nil)
+	port := conf.GetValue("http","port")
+	http.ListenAndServe(port, nil)
 }
 
 func startMisServer() {
 	http.HandleFunc("/killing/cleandb", flushHandle)
 	http.HandleFunc("/killing/addproduct", addProductHandle)
 	http.HandleFunc("/killing/getproductlist", getProductListHandle)
-	http.ListenAndServe(":9001", nil)
+	port := conf.GetValue("mis","port")
+	http.ListenAndServe(port, nil)
 }
 
 func main() {
