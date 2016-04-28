@@ -57,6 +57,6 @@ func DealRequestQueue(productId int64, productTotal int64, redisCli *iowrapper.R
 	{
 		logger.Info("Seckilling Done")
 		fmt.Printf("Product ID: %d, done!\n", productId)
-		PidFlag[productId] = false
+		//PidFlag[productId] = false
 	}
 }
