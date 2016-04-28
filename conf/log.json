@@ -4,11 +4,11 @@
     "FileWriter" : {
         "On": true,
 
-        "LogPath" : "./demo.log.info",
-        "RotateLogPath" : "./demo.log.info-%Y%M%D%H",
+        "LogPath" : "./log/log.info",
+        "RotateLogPath" : "./log/demo.log.info-%Y%M%D%H",
 
-        "WfLogPath" : "./demo.log.wf",
-        "RotateWfLogPath" : "./demo.log.wf-%Y%M%D%H"
+        "WfLogPath" : "./log/log.wf",
+        "RotateWfLogPath" : "./log/demo.log.wf-%Y%M%D%H"
     },
 
     "ConsoleWriter" : {

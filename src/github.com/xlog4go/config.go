@@ -86,5 +86,5 @@ func SetupLogWithConf(file string) (err error) {
 	default:
 		err = errors.New("Invalid log level")
 	}
-	return
+	return nil
 }

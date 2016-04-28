@@ -3,11 +3,13 @@ package main
 import (
 	logger "github.com/xlog4go"
 
+	"fmt"
 	"time"
 )
 
 func main() {
 	if err := logger.SetupLogWithConf("./log.json"); err != nil {
+		fmt.Println("start")
 		panic(err)
 	}
 	defer logger.Close()

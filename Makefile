@@ -12,5 +12,5 @@ build:
 
 clean:
 	@rm -f bin/seckilld
-	@rm -rf log
+	@rm -rf log/*
 

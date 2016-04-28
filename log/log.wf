@@ -1,0 +1,7 @@
+2016/04/28 08:07:36 [WARN] <redis_wraper.go:55> warning=[redis_connect_failed] num=[0] server=["127.0.0.1:6379"] err=[dial tcp 61.50.248.117:6379: getsockopt: operation timed out]
+2016/04/28 08:07:36 [ERROR] <redis_wraper.go:180> second error=[redis_lpop_failed] server=["127.0.0.1:6379"] key=[product_queue_111] err=[dial tcp 61.50.248.117:6379: getsockopt: operation timed out]
+2016/04/28 08:07:43 [WARN] <redis_wraper.go:55> warning=[redis_connect_failed] num=[0] server=["127.0.0.1:6379"] err=[dial tcp 61.50.248.117:6379: getsockopt: operation timed out]
+2016/04/28 08:07:43 [ERROR] <redis_wraper.go:326> second error=[redis_hgetall_failed] server=["127.0.0.1:6379"] key=[product_111] err=[dial tcp 61.50.248.117:6379: getsockopt: operation timed out]
+2016/04/28 08:07:43 [ERROR] <productseckillingInfo.go:17> error=[商品不存在] key=[111] err=[dial tcp 61.50.248.117:6379: getsockopt: operation timed out]
+2016/04/28 08:19:39 [WARN] <redis_wraper.go:55> warning=[redis_connect_failed] num=[0] server=["127.0.0.1:6379"] err=[dial tcp 202.106.199.34:6379: getsockopt: operation timed out]
+2016/04/28 08:19:39 [ERROR] <redis_wraper.go:245> error=[redis_hmset_failed] server=["127.0.0.1:6379"] key=[product_111] err=[dial tcp 202.106.199.34:6379: getsockopt: operation timed out]

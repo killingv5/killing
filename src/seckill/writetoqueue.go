@@ -2,7 +2,7 @@
 package seckill
 
 import (
-	//"fmt"
+	"fmt"
 	logger "github.com/xlog4go"
 	"helpers/iowrapper"
 )
@@ -21,7 +21,10 @@ func pushtohash(pid string, uid string, redisCli *iowrapper.RedisClient) (error)
 	values = append(values, uid)
 	values = append(values, status)
 	if redisCli != nil {
+		fmt.Println("3")
 	    _, err := redisCli.Hmset(key, values)
+
+		fmt.Println("3")
 	    if err != nil {
             logger.Error("error=[redis_hmset_hash_failed] key=[%s] uid=[%s] status=[%s] err=[%s]", key, uid, status, err.Error())
 	}
