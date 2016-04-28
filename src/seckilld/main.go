@@ -40,6 +40,18 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) int {
 		return seckill.ERRNO_LACK_USRID
 	}
 
+	_ , err := strconv.Atoi(req.Form["productid"][0])
+	if err != nil {
+		return seckill.ERRNO_PARA_NUM
+	}
+
+	if needUid {
+		_, err = strconv.Atoi(req.Form["userid"][0])
+		if err != nil {
+			return seckill.ERRNO_PARA_NUM
+		}
+	}
+
 	if !needSign {
 		return seckill.ERRNO_NONE
 	}
@@ -148,11 +160,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	pid, err := strconv.Atoi(req.Form["productid"][0])
-	if err != nil {
-		errno = seckill.ERRNO_PARA_NUM
-		return
-	}
+	pid, _ := strconv.Atoi(req.Form["productid"][0])
 
 	value,okxx := seckill.PidFlag[int64(pid)]
 	if okxx && !value {
@@ -176,8 +184,12 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
-	errno = seckill.ERRNO_SECKILLING
+	err := seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
+	if err != nil {
+		errno = seckill.ERRNO_UNKNOW
+	} else {
+		errno = seckill.ERRNO_SECKILLING
+	}
 
 }
 
@@ -205,12 +217,6 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	errNo := paramCheck(req, true, needCheckSign)
 	if errNo != seckill.ERRNO_NONE {
 		errno = errNo
-		return
-	}
-
-	_ , err := strconv.Atoi(req.Form["productid"][0])
-	if err != nil {
-		errno = seckill.ERRNO_PARA_NUM
 		return
 	}
 
