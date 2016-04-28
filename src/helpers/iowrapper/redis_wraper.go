@@ -9,6 +9,7 @@ import (
 	logger "github.com/xlog4go"
 	"helpers/common"
 	"time"
+	"errors"
 )
 
 type RedisClient struct {
@@ -424,4 +425,48 @@ func (client *RedisClient) Decr(key string) (int64, error) {
 		}
 	}
 	return res, err
+}
+
+func (client *RedisClient) BLpop(key string, timeout int64) (string, error) {
+	conn := client.pool.Get()
+	value := ""
+	defer conn.Close()
+
+	rslt,err := conn.Do("BLPOP", key, timeout)
+	if err != nil {
+		if err.Error() == "redigo: nil returned" {
+			logger.Info("error=[redis_lpop_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+			return "", err
+		} else {
+			logger.Error("error=[redis_lpop_failed] server=[%s] key=[%s] err=[%s]",
+				client.Servers[client.current_index], key, err.Error())
+		}
+
+		conn_second := client.pool.Get()
+		defer conn_second.Close()
+
+		rslt,err = conn.Do("BLPOP", key, timeout)
+		if err != nil {
+			if err.Error() == "redigo: nil returned" {
+				logger.Info("second error=[redis_lpop_failed] server=[%s] key=[%s] err=[%s]",
+					client.Servers[client.current_index], key, err.Error())
+			} else {
+				logger.Error("second error=[redis_lpop_failed] server=[%s] key=[%s] err=[%s]",
+					client.Servers[client.current_index], key, err.Error())
+			}
+			return "", err
+		}
+	}
+
+	if val, ok := rslt.([]interface{});ok {
+		if len(val) < 2 {
+			return "", errors.New("Redis return err")
+		}
+		if valbit ,ok:= val[1].([]byte);ok {
+			value =  string(valbit)
+		}
+	}
+
+	return value, nil
 }

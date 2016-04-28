@@ -38,7 +38,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = seckill.Pushtoredis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
+	err = seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
 	if err != nil {
     	w.Write([]byte("unknow error"))
     	fmt.Println(err)

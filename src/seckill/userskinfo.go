@@ -13,7 +13,7 @@ type UserSeckingInfo struct {
 } 
 
 func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClient) (*UserSeckingInfo, error) {
-	res, err := client.Hget("product_"+ pid, uid)
+	res, err := client.Hget(PRODUCT_HASH + pid, uid)
 	fmt.Println(res)
 
 	if res == "" {
