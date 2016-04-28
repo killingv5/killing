@@ -212,13 +212,17 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	/*
+	pid, err := strconv.Atoi(req.Form["productid"][0])
+	if err != nil {
+		w.Write([]byte("参数输入错误!"))
+		return
+	}
 
 	_, ok := pidCountMap[pid]
 	if !ok {
-		w.Write([]byte("商品信息错误!"))
+		w.Write([]byte("商品信息不存在!"))
 		return
-	}*/
+	}
 
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
@@ -288,17 +292,8 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 func initFromConf(configFile string) error {
 	conf := seckill.SetConfig(configFile)
 	serverInfo = conf.GetValue("redis", "serverInfo")
-	//fmt.Println(serverInfo)
-	//init logger
-	logFile = conf.GetValue("log", "logfile")
 
-	productId := conf.GetValue("product", "productid")
-	productNum := conf.GetValue("product", "productnum")
-	productid, _ := strconv.Atoi(productId);
-	productnum, _ := strconv.Atoi(productNum);
-	//fmt.Println(productid)
-	//fmt.Println(productnum)
-	pidCountMap[productid] = productnum
+	logFile = conf.GetValue("log", "logfile")
 
 	needcheck := conf.GetValue("sign", "needcheck")
 	if strings.EqualFold("1", needcheck) {
@@ -315,14 +310,6 @@ func initRedisCli(serverInfo string) error {
 
 	err := redisCli.Init()
 	return err
-}
-
-func initWorker() error {
-	for k, _ := range pidCountMap {
-		go seckill.DealRequestQueue(int64(k), redisCli)
-		// fmt.Println(k)
-	}
-	return nil
 }
 
 func initController() error {
@@ -371,13 +358,6 @@ func main() {
 	err = initRedisCli(serverInfo)
 	if err != nil {
 		logger.Error("init redis failed,err:%s", err.Error())
-		return
-	}
-
-	err = initWorker()
-	if err != nil {
-		//fmt.Println(err)
-		logger.Error("init worker failed,err:%s", err.Error())
 		return
 	}
 
