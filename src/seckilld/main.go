@@ -43,7 +43,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
     	w.Write([]byte("unknow error"))
     	fmt.Println(err)
 	} else {
-    	w.Write([]byte("Hello"))
+    	w.Write([]byte("排队中，结果请稍后查询"))
 	}
 }
 

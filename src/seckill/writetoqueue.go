@@ -2,7 +2,7 @@
 package seckill
 
 import (
-	"fmt"
+//	"fmt"
 	logger "github.com/xlog4go"
 	"helpers/iowrapper"
 )
