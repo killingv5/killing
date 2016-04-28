@@ -135,7 +135,7 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	err := paramCheck(req, true, needCheckSign)
 	if err != nil {
-		w.Write([]byte("参数输入错误!"))
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -156,7 +156,7 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		retMap["errno"] = seckill.ERRNO_NONE
 		retMap["status"] = seckill.SECKILLING_FAIL
-		retMap["goodsid"] = info.Goodsid
+		retMap["goodsid"] = -1
 	} else {
 		retMap["errno"] = seckill.ERRNO_NONE
 		retMap["status"] = info.Status
@@ -178,6 +178,7 @@ type proSeckRet struct {
 }
 
 func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
 	err := paramCheck(req, false, needCheckSign)
 	if err != nil {
 		w.Write([]byte(err.Error()))

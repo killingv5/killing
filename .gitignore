@@ -4,3 +4,6 @@
 
 # out
 bin/
+
+# log
+log/
