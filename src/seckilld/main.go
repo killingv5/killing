@@ -103,7 +103,7 @@ func addProductHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	seckill.AddProduct(req.Form["productid"][0], req.Form["productnum"][0], req.Form["starttime"][0], redisCli)
-	
+	w.Write([]byte("商品添加成功！"))
 }
 
 /**
