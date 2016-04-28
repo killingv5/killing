@@ -62,7 +62,7 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) error {
 	return nil
 }
 
-``/**
+/**
 * 清空数据库
 **/
 func flushHandle(w http.ResponseWriter, req *http.Request) {
