@@ -62,7 +62,7 @@ func (client *RedisClient) Init() error {
 					}
 				}
 				if err == nil {
-					logger.Info("info=[redis_connect_ok] num=[%d] server=[%s] err=[%s]",
+					logger.Info("info=[redis_connect_ok] num=[%d] server=[%s]",
 						i, client.Servers[index])
 					break
 				}
