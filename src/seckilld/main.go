@@ -165,17 +165,19 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 
 	value,okxx := seckill.PidFlag[int64(pid)]
 	if okxx && !value {
-		w.Write([]byte("活动结束,稍后请到查询页面查询结果"))
+		errno = seckill.ERROR_SECK_END
 		return
 	}
 
 	state := seckill.GetPidState(req.Form["productid"][0])
 	switch state {
 	case seckill.STATE_NOT_STARTED:
-		w.Write([]byte("秒杀未开始!"))
+		errno = seckill.ERROR_SECK_NOT_START
+		//w.Write([]byte("秒杀未开始!"))
 		return
 	case seckill.STATE_NOT_EXIST:
-		w.Write([]byte("商品信息错误!"))	
+		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
+		//w.Write([]byte("商品信息错误!"))	
 		return
 	}
 
@@ -220,13 +222,15 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 
 	_ , err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
-		w.Write([]byte("参数输入错误!"))
+		errno = seckill.ERRNO_PARA_NUM
+		//w.Write([]byte("参数输入错误!"))
 		return
 	}
 
 	state := seckill.GetPidState(req.Form["productid"][0])
 	if state == seckill.STATE_NOT_EXIST {
-		w.Write([]byte("商品信息错误!"))	
+		errno = seckill.ERRNO_PRODUCT_NOT_EXIST
+		//w.Write([]byte("商品信息错误!"))	
 		return
 	}
 
