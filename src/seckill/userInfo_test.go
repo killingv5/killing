@@ -23,3 +23,50 @@ func TestHello2(t *testing.T) {
 	fmt.Println(err2)
 	fmt.Println(err3)
 }
+
+func TestCleanRedis(t *testing.T){
+	var client *iowrapper.RedisClient = &iowrapper.RedisClient{Servers:[]string{"127.0.0.1:6379"}}
+	
+	client.Init()
+
+	
+	err :=CleanProduct("222",client)
+	fmt.Println(err)
+	
+}
+
+func TestGetProcount(t *testing.T){
+	var client *iowrapper.RedisClient = &iowrapper.RedisClient{Servers:[]string{"127.0.0.1:6379"}}
+	
+	client.Init()
+
+	
+	// count, err :=
+	GetProductCount("33333",client)
+	// fmt.Println(count)
+	// fmt.Println(err)
+	
+}
+
+func TestAddProduct(t *testing.T){
+	var client *iowrapper.RedisClient = &iowrapper.RedisClient{Servers:[]string{"127.0.0.1:6379"}}
+	
+	client.Init()
+
+	
+	err :=AddProduct("4444", "21", "20160309141711",client)
+	fmt.Println(err)
+	
+}
+
+
+func TestGetProductList(t *testing.T){
+	var client *iowrapper.RedisClient = &iowrapper.RedisClient{Servers:[]string{"127.0.0.1:6379"}}
+	
+	client.Init()
+	json, err :=GetProductList(client)
+	fmt.Println(json)
+	fmt.Println(err)
+
+}
+
