@@ -19,6 +19,34 @@ func init() {
 	pidCountMap = make(map[int]int)
 }
 
+func flushHandle(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	if len(req.Form["productid"]) <= 0 {
+		w.Write([]byte("param error !"))
+		return
+	}
+
+	pid, err := strconv.Atoi(req.Form["productid"][0])
+	if err != nil {
+		w.Write([]byte("param error !"))
+		return
+	}
+
+	_, ok := pidCountMap[pid]
+	if !ok {
+		w.Write([]byte("no productid !"))
+		return
+	}
+
+	err = seckill.CleanProduct(req.Form["productid"][0], redisCli)
+	if err != nil {
+    	w.Write([]byte("数据清空失败！"))
+    	fmt.Println(err)
+	} else {
+    	w.Write([]byte("数据清空成功！"))
+	}
+}
+
 func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
@@ -174,6 +202,11 @@ func startHttpServer() {
     http.ListenAndServe(":8001", nil)
 }
 
+func startMisServer() {
+	http.HandleFunc("/killing/cleandb", flushHandle)
+    http.ListenAndServe(":9001", nil)
+}
+
 func main() {
 
 	argc := len(os.Args)
@@ -193,6 +226,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
+	go startMisServer()
+	
 	startHttpServer()
+	
 }
