@@ -32,6 +32,12 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	value,okxx := seckill.PidFlag[int64(pid)]
+	if okxx && !value {
+		w.Write([]byte("活动结束,稍后请到查询页面查询结果"))
+		return
+	}
+
 	_, ok := pidCountMap[pid]
 	if !ok {
 		w.Write([]byte("no productid !"))
@@ -48,6 +54,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
+
     req.ParseForm()
 	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
 		w.Write([]byte("param error !"))
