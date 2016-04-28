@@ -53,18 +53,20 @@ func ControlState(client *iowrapper.RedisClient) {
 			_, ok := keepermap[pid]
 			if ok {
 				newstarttime := infolist[i].Seckillingtime
-				t, _ := time.Parse("20060102150405", newstarttime)
-				// timediff := newstarttime.Sub(keepermap[pid].Starttime)
-				timediff := t.Sub(keepermap[pid].Starttime)
+				//t, _ := time.Parse("20060102150405", newstarttime)
+				timediff := newstarttime.Sub(keepermap[pid].Starttime)
+				//timediff := t.Sub(keepermap[pid].Starttime)
 				if timediff != 0 {
 					delete(keepermap, pid)
-					keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
+					//keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
+					keepermap[pid] = &Keeper{STATE_NOT_STARTED, newstarttime}
 					go keepermap[pid].Run()
 				}
 			} else {
 				starttime := infolist[i].Seckillingtime
-				t, _ := time.Parse("20060102150405", starttime)
-				keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
+				//t, _ := time.Parse("20060102150405", starttime)
+				//keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
+				keepermap[pid] = &Keeper{STATE_NOT_STARTED, starttime}
 				go keepermap[pid].Run()
 			}
 		}
