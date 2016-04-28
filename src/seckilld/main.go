@@ -10,6 +10,10 @@ import (
 	"os"
 	logger "github.com/xlog4go"
 	"time"
+	"errors"
+	"crypto/md5"
+    "encoding/hex"
+    "strings"
 )
 
 var(
@@ -17,10 +21,45 @@ var(
 	redisCli  		  *iowrapper.RedisClient
 	serverInfo        string
 	logFile           string
+	needCheckSign	  bool
 )
 
 func init() {
 	pidCountMap = make(map[int]int)
+	needCheckSign = false
+}
+
+func paramCheck(req *http.Request, needUid bool, needSign bool) error{ 
+	if len(req.Form["productid"]) <= 0 {
+		return errors.New("productid miss")
+	}
+
+	if needUid && len(req.Form["userid"]) <= 0 {
+		return errors.New("userid miss")
+	}
+
+	if !needSign {
+		return nil
+	}
+
+	if len(req.Form["sign"]) <= 0 {
+		return errors.New("sign miss")
+	}
+
+	var uidpid string
+	if needUid {
+		uidpid = req.Form["userid"][0] + req.Form["productid"][0]
+	} else {
+		uidpid = req.Form["productid"][0]
+	}
+
+	h := md5.New()
+    h.Write([]byte(uidpid))
+    if !strings.EqualFold(req.Form["sign"][0], hex.EncodeToString(h.Sum(nil))) {
+		return errors.New("sign error")
+    }
+
+    return nil
 }
 
 func flushHandle(w http.ResponseWriter, req *http.Request) {
@@ -53,10 +92,12 @@ func flushHandle(w http.ResponseWriter, req *http.Request) {
 
 func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
-	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
-		w.Write([]byte("param error !"))
-		return
-	}
+
+    err := paramCheck(req, true, needCheckSign)
+    if err != nil {
+    	w.Write([]byte(err.Error()))
+    	return
+    }
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
@@ -74,6 +115,7 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	err = seckill.PushToRedis(req.Form["productid"][0], req.Form["userid"][0], redisCli)
 	if err != nil {
 		//retMap["errno"] = seckill.ERRNO_SECKILL_FAIL
+		w.Write([]byte("unknow error")
 		logger.Error("errno=[%s],err=[%s]",seckill.ERRNO_SECKILL_FAIL,err.Error())
 	} else {
 		w.Write([]byte("排队中，结果请稍后查询"))
@@ -90,11 +132,12 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
-    	req.ParseForm()
-	if len(req.Form["userid"]) <= 0 || len(req.Form["productid"]) <= 0 {
-		w.Write([]byte("param error !"))
-		return
-	}
+    req.ParseForm()
+	err := paramCheck(req, true, needCheckSign)
+    if err != nil {
+    	w.Write([]byte(err.Error()))
+    	return
+    }
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
@@ -135,11 +178,11 @@ type proSeckRet struct {
 }
 
 func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
-    req.ParseForm()
-	if len(req.Form["productid"]) <= 0 {
-		w.Write([]byte("param error !"))
-		return
-	}
+	err := paramCheck(req, false, needCheckSign)
+    if err != nil {
+    	w.Write([]byte(err.Error()))
+    	return
+    }
 
 	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
@@ -162,7 +205,6 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	}
 	fmt.Println(rets)
 
-	//xxx := woqu{Error:1, List:[]ChatDb{ChatDb{12,15}, ChatDb{23, 343}}}
 	retJson, err := json.Marshal(retSt)
 	if err != nil {
 		return
@@ -179,6 +221,8 @@ func initFromConf(configFile string) error {
 	//init logger
 	logFile = conf.GetValue("log","logfile")
 
+
+
 	productId   := conf.GetValue("product","productid")
 	productNum  := conf.GetValue("product","productnum")
 	productid, _ := strconv.Atoi(productId);
@@ -187,25 +231,27 @@ func initFromConf(configFile string) error {
 	//fmt.Println(productnum)
 	pidCountMap[productid] = productnum
 
+	needcheck := conf.GetValue("sign", "needcheck")
+	if strings.EqualFold("1", needcheck) {
+		needCheckSign = true
+	}
+
 	return nil
 }
 
 func initRedisCli(serverInfo string) error {
-	fmt.Println(serverInfo)
 	redisCli = &iowrapper.RedisClient{
 			Servers:        []string{serverInfo},
 	//	Servers:        []string{"127.0.0.1:6379"},
 	}
 
 	err := redisCli.Init()
-
-		//redisCli.Set("xxx", []byte("xxx1"))
 	return err
 }
 
 func initWorker() error{
 	for k, _ := range pidCountMap {
-		 go seckill.DealRequestQueue(int64(k), redisCli)
+		go seckill.DealRequestQueue(int64(k), redisCli)
 		fmt.Println(k)
 	}
 	return nil
