@@ -104,6 +104,19 @@ func addProductHandle(w http.ResponseWriter, req *http.Request) {
 	}
 	seckill.AddProduct(req.Form["productid"][0], req.Form["productnum"][0], req.Form["starttime"][0], redisCli)
 	w.Write([]byte("商品添加成功！"))
+	pid, err := strconv.Atoi(req.Form["productid"][0])
+	if err != nil {
+		w.Write([]byte("参数输入错误!"))
+		return
+	}
+
+	count, err := strconv.Atoi(req.Form["productnum"][0])
+	if err != nil {
+		w.Write([]byte("参数输入错误!"))
+		return
+	}
+	pidCountMap[pid] = count
+	go seckill.DealRequestQueue(int64(pid), redisCli)
 }
 
 /**
@@ -141,10 +154,22 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	state := seckill.GetPidState(req.Form["productid"][0])
+	switch state {
+	case seckill.STATE_NOT_STARTED:
+		w.Write([]byte("秒杀未开始!"))
+		return
+	/*case seckill.STATE_ENDED:
+		w.Write([]byte("秒杀已结束!"))
+		return*/
+	case seckill.STATE_NOT_EXIST:
+		w.Write([]byte("商品信息错误!"))	
+		return
+	}
+
 	_, ok := pidCountMap[pid]
 	if !ok {
 		w.Write([]byte("商品信息不存在!"))
-
 		return
 	}
 
@@ -175,17 +200,25 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	pid, err := strconv.Atoi(req.Form["productid"][0])
+	_ , err = strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		w.Write([]byte("参数输入错误!"))
 		return
 	}
 
+	state := seckill.GetPidState(req.Form["productid"][0])
+	if state == seckill.STATE_NOT_EXIST {
+		w.Write([]byte("商品信息错误!"))	
+		return
+	}
+
+	/*
+
 	_, ok := pidCountMap[pid]
 	if !ok {
 		w.Write([]byte("商品信息错误!"))
 		return
-	}
+	}*/
 
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
@@ -240,7 +273,7 @@ func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) 
 	} else {
 		retSt = proSeckRet{seckill.ERRNO_NONE, rets}
 	}
-	fmt.Println(rets)
+	// fmt.Println(rets)
 
 	retJson, err := json.Marshal(retSt)
 	if err != nil {
@@ -287,8 +320,16 @@ func initRedisCli(serverInfo string) error {
 func initWorker() error {
 	for k, _ := range pidCountMap {
 		go seckill.DealRequestQueue(int64(k), redisCli)
-		fmt.Println(k)
+		// fmt.Println(k)
 	}
+	return nil
+}
+
+func initController() error {
+	if redisCli == nil {
+		return errors.New("controller init failed : redis init failed")
+	}
+	go seckill.ControlState(redisCli)
 	return nil
 }
 
@@ -337,6 +378,12 @@ func main() {
 	if err != nil {
 		//fmt.Println(err)
 		logger.Error("init worker failed,err:%s", err.Error())
+		return
+	}
+
+	err = initController()
+	if err != nil {
+		logger.Error("init controller failed,err:%s", err.Error())
 		return
 	}
 
