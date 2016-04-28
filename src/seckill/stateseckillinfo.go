@@ -3,6 +3,7 @@ package seckill
 import (
 	"helpers/iowrapper"
 	"time"
+	// "fmt"
 
 	logger "github.com/xlog4go"
 )
@@ -28,6 +29,7 @@ func GetPidState(pid string) int {
 func (kp *Keeper) Run() {
 	timediff := kp.Starttime.Sub(time.Now())
 	time.Sleep(timediff)
+
 	kp.State = STATE_ING
 }
 
@@ -46,19 +48,14 @@ func ControlState(client *iowrapper.RedisClient) {
 			_, ok := keepermap[pid]
 			if ok {
 				newstarttime := infolist[i].Seckillingtime
-				//t, _ := time.Parse("20060102150405", newstarttime)
 				timediff := newstarttime.Sub(keepermap[pid].Starttime)
-				//timediff := t.Sub(keepermap[pid].Starttime)
 				if timediff != 0 {
 					delete(keepermap, pid)
-					//keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
 					keepermap[pid] = &Keeper{STATE_NOT_STARTED, newstarttime}
 					go keepermap[pid].Run()
 				}
 			} else {
 				starttime := infolist[i].Seckillingtime
-				//t, _ := time.Parse("20060102150405", starttime)
-				//keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
 				keepermap[pid] = &Keeper{STATE_NOT_STARTED, starttime}
 				go keepermap[pid].Run()
 			}
@@ -68,14 +65,6 @@ func ControlState(client *iowrapper.RedisClient) {
 			if !ok {
 				delete(keepermap, key)
 				continue
-			}
-			infocount, err := GetProductCount(key, client)
-			if err != nil {
-				logger.Error("GetProductCount Failed! err=[%s]", err.Error())
-				continue
-			}
-			if infocount <= 0 {
-				keepermap[key].State = STATE_ENDED
 			}
 		}
 

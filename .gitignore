@@ -3,7 +3,10 @@
 .idea
 
 # out
-bin/
+bin/*
 
 # log
-log/
+log/*
+
+# MAC
+.DS_Store

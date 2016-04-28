@@ -31,7 +31,6 @@ func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClie
 		if err !=nil {
 			logger.Warn("errno=[%s] err=[%s]",ERRNO_SECKILING_FAILED, err.Error())
 		}
-		//fmt.Println(err)
 		return &UserSeckingInfo{Status:2, Goodsid:0}, err
 	}
 	
@@ -39,15 +38,7 @@ func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClie
 	if err !=nil {
 		logger.Error("errno=[%s] err=[%s]",ERRNO_PARSE_FAILED, err.Error())
 	}
-	//fmt.Println(gid)
 
-	if gid == 0 {//有结果，但是商品编号为0，表示正在秒杀中
-		if err !=nil {
-			logger.Warn("errno=[%s] err=[%s]",ERRNO_SECKILLING, err.Error())
-		}
-		//fmt.Println(err)
-		return &UserSeckingInfo{Status:3, Goodsid:0}, err
-	}
 	//秒中
 	return &UserSeckingInfo{Status:1, Goodsid: gid}, nil
 }

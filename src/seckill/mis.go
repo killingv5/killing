@@ -48,7 +48,7 @@ func AddProduct(pid string, num string, timestr string, client *iowrapper.RedisC
 	if !checkTime(timestr) {
 		return errors.New("error=[添加商品-》日期格式错误]")
 	}
-	t, _ :=time.Parse("20060102150405", timestr)
+	t, _ :=time.ParseInLocation("20060102150405", timestr, time.Local)
 	//formatTime := t.Format("2006-01-02 15:04:05")
 	numInt, _ :=strconv.ParseInt(num, 10, 64)
 	pi := ProductInfo{Pid:pid, Pnum:numInt, Seckillingtime:t}

@@ -18,7 +18,6 @@ func PushToQueue(pid string, uid string, redisCli *iowrapper.RedisClient) (error
 		return err
 	}
 
-
 	return nil
 }
 
