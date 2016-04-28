@@ -25,7 +25,7 @@ type UserSeckingInfo struct {
 * result：两个返回值，UserSeckingInfo和error
 **/
 func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClient) (*UserSeckingInfo, error) {
-	res, err := client.Hget("product_"+ pid, uid)
+	res, err := client.Hget(PRODUCT_HASH + pid, uid)
 	fmt.Println(res)
 
 	//秒杀结果中没有(pid,uid)，表示未秒中

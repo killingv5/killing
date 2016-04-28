@@ -8,10 +8,10 @@ import (
 
 func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	productType := strconv.FormatInt(productId, 10)
-	countType := "count_" + productType
-	productQueueName := "product_queue_" + productType
-	userIdSetName := "userid_set_" + productType
-	productName := "product_" + productType
+	countType := COUNT_TYPE + productType
+	productQueueName := PRODUCT_QUEUE + productType
+	userIdSetName := USERID_SET + productType
+	productName := PRODUCT_HASH + productType
 
 	for {
 		userId, err := redisCli.BLpop(productQueueName, 0)
@@ -42,5 +42,4 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	{
 		logger.Info("Seckilling Done")
 	}
-	
 }
