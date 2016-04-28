@@ -4,8 +4,7 @@ import (
 	"helpers/iowrapper"
 	logger "github.com/xlog4go"
 	"strconv"
-	"fmt"
-)	
+)
 
 /**
 * 用户秒杀结果
@@ -49,7 +48,6 @@ func QueryUserSeckillingInfo(uid string, pid string, client *iowrapper.RedisClie
 		//fmt.Println(err)
 		return &UserSeckingInfo{Status:3, Goodsid:0}, err
 	}
-	fmt.Println(err)
 	//秒中
 	return &UserSeckingInfo{Status:1, Goodsid: gid}, nil
 }

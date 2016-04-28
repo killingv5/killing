@@ -4,7 +4,16 @@ import (
 	"strconv"
 	"helpers/iowrapper"
 	logger "github.com/xlog4go"
+	"fmt"
 )
+
+var Flag bool
+var PidFlag map[int64]bool
+
+func init() {
+	Flag = true
+	PidFlag = make(map[int64]bool)
+}
 
 func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	productType := strconv.FormatInt(productId, 10)
@@ -41,5 +50,7 @@ func DealRequestQueue(productId int64, redisCli *iowrapper.RedisClient)  {
 	END:
 	{
 		logger.Info("Seckilling Done")
+		fmt.Print("done")
+		PidFlag[productId] = false
 	}
 }

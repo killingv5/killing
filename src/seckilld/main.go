@@ -31,11 +31,11 @@ func init() {
 
 func paramCheck(req *http.Request, needUid bool, needSign bool) error {
 	if len(req.Form["productid"]) <= 0 {
-		return errors.New("productid miss")
+		return errors.New("缺少商品信息!")
 	}
 
 	if needUid && len(req.Form["userid"]) <= 0 {
-		return errors.New("userid miss")
+		return errors.New("缺失用户信息!")
 	}
 
 	if !needSign {
@@ -43,7 +43,7 @@ func paramCheck(req *http.Request, needUid bool, needSign bool) error {
 	}
 
 	if len(req.Form["sign"]) <= 0 {
-		return errors.New("sign miss")
+		return errors.New("服务器未收到信息!")
 	}
 
 	var uidpid string
@@ -142,9 +142,15 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_ , err = strconv.Atoi(req.Form["productid"][0])
+	pid, err := strconv.Atoi(req.Form["productid"][0])
 	if err != nil {
 		w.Write([]byte("参数输入错误!"))
+		return
+	}
+
+	value,okxx := seckill.PidFlag[int64(pid)]
+	if okxx && !value {
+		w.Write([]byte("活动结束,稍后请到查询页面查询结果"))
 		return
 	}
 
@@ -153,11 +159,17 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 	case seckill.STATE_NOT_STARTED:
 		w.Write([]byte("秒杀未开始!"))
 		return
-	case seckill.STATE_ENDED:
+	/*case seckill.STATE_ENDED:
 		w.Write([]byte("秒杀已结束!"))
-		return
+		return*/
 	case seckill.STATE_NOT_EXIST:
 		w.Write([]byte("商品信息错误!"))	
+		return
+	}
+
+	_, ok := pidCountMap[pid]
+	if !ok {
+		w.Write([]byte("商品信息不存在!"))
 		return
 	}
 
@@ -184,7 +196,7 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	err := paramCheck(req, true, needCheckSign)
 	if err != nil {
-		w.Write([]byte("参数输入错误!"))
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -211,14 +223,13 @@ func queryUserSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
 	retMap := make(map[string]int64)
 	info, err := seckill.QueryUserSeckillingInfo(req.Form["userid"][0], req.Form["productid"][0], redisCli)
 	if err != nil {
-		//retMap["errno"] = seckill.ERRNO_QUE_UERSECKILL_FAIL
-		w.Write([]byte("很遗憾,没有秒杀到 ~"))
-		//logger.Error("errno=[%s], err=[%s]", seckill.ERRNO_QUE_UERSECKILL_FAIL, err.Error())
+		retMap["errno"] = seckill.ERRNO_NONE
+		retMap["status"] = seckill.SECKILLING_FAIL
+		retMap["goodsid"] = -1
 	} else {
 		retMap["errno"] = seckill.ERRNO_NONE
 		retMap["status"] = info.Status
 		retMap["goodsid"] = info.Goodsid
-
 	}
 
 	retJson, err := json.Marshal(retMap)
@@ -309,7 +320,7 @@ func initRedisCli(serverInfo string) error {
 func initWorker() error {
 	for k, _ := range pidCountMap {
 		go seckill.DealRequestQueue(int64(k), redisCli)
-		fmt.Println(k)
+		// fmt.Println(k)
 	}
 	return nil
 }
