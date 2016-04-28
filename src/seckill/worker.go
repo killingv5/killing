@@ -21,6 +21,7 @@ func init() {
  *  5.商品数量减一
  */
 func DealRequestQueue(productId int64, productTotal int64, redisCli *iowrapper.RedisClient)  {
+	fmt.Printf("%d worker start running\n", productId)
 	productType := strconv.FormatInt(productId, 10)
 	countType := COUNT_TYPE + productType
 	productQueueName := PRODUCT_QUEUE + productType

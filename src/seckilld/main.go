@@ -154,16 +154,19 @@ func seckillingHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	value,okxx := seckill.PidFlag[int64(pid)]
+	/*value,okxx := seckill.PidFlag[int64(pid)]
 	if okxx && !value {
 		errno = seckill.ERROR_SECK_END
 		return
-	}
+	}*/
 
 	state := seckill.GetPidState(req.Form["productid"][0])
 	switch state {
 	case seckill.STATE_NOT_STARTED:
 		errno = seckill.ERROR_SECK_NOT_START
+		return
+	case seckill.STATE_ENDED:
+		w.Write([]byte("秒杀已结束!"))
 		return
 	case seckill.STATE_NOT_EXIST:
 		errno = seckill.ERRNO_PRODUCT_NOT_EXIST

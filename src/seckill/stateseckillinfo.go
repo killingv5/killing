@@ -35,7 +35,7 @@ func (kp *Keeper) Run() {
 
 func ControlState(client *iowrapper.RedisClient) {
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * time.Duration(1) / 5)
 		infolist, err := GetAllProductInfo(client)
 		if err != nil {
 			logger.Error("GetAllProductInfo Failed! err=[%s]", err.Error())
@@ -65,6 +65,14 @@ func ControlState(client *iowrapper.RedisClient) {
 			if !ok {
 				delete(keepermap, key)
 				continue
+			}
+			infocount, err := GetProductCount(key, client)
+			if err != nil {
+				logger.Error("GetProductCount Failed! err=[%s]", err.Error())
+				continue
+			}
+			if infocount <= 0 {
+				keepermap[key].State = STATE_ENDED
 			}
 		}
 
