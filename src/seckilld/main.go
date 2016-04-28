@@ -209,7 +209,7 @@ type proSeckRet struct {
 }
 
 func queryProductSeckillingInfoHandle(w http.ResponseWriter, req *http.Request) {
-	perr := paramCheck(req, false, needCheckSign)
+	err := paramCheck(req, false, needCheckSign)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
@@ -295,11 +295,8 @@ func startHttpServer() {
 
 func startMisServer() {
 	http.HandleFunc("/killing/cleandb", flushHandle)
-<<<<<<< HEAD
 	http.HandleFunc("/killing/addproduct", addProductHandle)
 	http.HandleFunc("/killing/getproductlist", getProductListHandle)
-=======
->>>>>>> 45a202322c2ca6d029ef1bd8e9d60e422b1ba495
 	http.ListenAndServe(":9001", nil)
 }
 
