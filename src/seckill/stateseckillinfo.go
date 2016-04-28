@@ -3,9 +3,9 @@ package seckill
 import (
 	"helpers/iowrapper"
 	"time"
+
 	logger "github.com/xlog4go"
 )
-
 
 type Keeper struct {
 	State     int
@@ -46,12 +46,14 @@ func ControlState(client *iowrapper.RedisClient) {
 			logger.Error("GetAllProductInfo Failed! err=[%s]", err.Error())
 			continue
 		}
+		infomap := make(map[string]int)
 		for i := 0; i < len(infolist); i++ {
 			pid := infolist[i].Pid
+			infomap[pid] = 1
 			_, ok := keepermap[pid]
 			if ok {
 				newstarttime := infolist[i].Seckillingtime
-				t, _ :=time.Parse("20060102150405", newstarttime)
+				t, _ := time.Parse("20060102150405", newstarttime)
 				// timediff := newstarttime.Sub(keepermap[pid].Starttime)
 				timediff := t.Sub(keepermap[pid].Starttime)
 				if timediff != 0 {
@@ -61,12 +63,17 @@ func ControlState(client *iowrapper.RedisClient) {
 				}
 			} else {
 				starttime := infolist[i].Seckillingtime
-				t, _ :=time.Parse("20060102150405", starttime)
+				t, _ := time.Parse("20060102150405", starttime)
 				keepermap[pid] = &Keeper{STATE_NOT_STARTED, t}
 				go keepermap[pid].Run()
 			}
 		}
 		for key, _ := range keepermap {
+			_, ok := infomap[key]
+			if !ok {
+				delete(keepermap, key)
+				continue
+			}
 			infocount, err := GetProductCount(key, client)
 			if err != nil {
 				logger.Error("GetProductCount Failed! err=[%s]", err.Error())
